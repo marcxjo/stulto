@@ -1,63 +1,71 @@
-A Stupid Terminal
-=================
+Stulto - The Fool's Terminal
+============================
 
 About
 -----
 
-This is a simple wrapper around the VTE terminal emulator
-widget for GTK+. Its main feature is to easily start new
-terminal windows from the command line. Eg.
+Stulto is a simple wrapper around the VTE terminal emulator widget for GTK3.
 
-```sh
-$ st -- ssh -p 2222 myserver.com &
-```
+The main purpose of Stulto is to provide the developer with a simple playground in which to explore and develop GTK/VTE
+features. With the exception of a few configuration settings inherited from `stupidterm`, the intent is to minimize the
+number of features subject to deprecation or obsoletion once they've been added, but users should expect that features
+will be added from time to time. In most cases, they will be made optional when possible.
 
-This will start a new terminal window running ssh, and
-will automatically close when you exit the session.
+Note that this project is not currently accepting feature requests, but will consider doing so once it reaches a more
+mature state.
 
-A nifty trick is to add the following snippet to your
-.bashrc so you don't have to add -- and & after every
-command.
+Tentative Roadmap
+-----------------
 
-```sh
-vt() { /usr/bin/st -- "$@" & }
-```
+### Planned Features
+* Port to GTK4
+* Setting default tab label from terminal prompt
+* Optional support for client-side decorations
+* Support for per-tab terminal profiles
 
-No support for tabs or other bells and whistles are
-implemnted. Use your window manager for that.
+### Architectural Enhancements
+* Split out source into separate files per domain
+* Add support for feature toggling at build time
 
+### Nice-to-Haves
+* Configuration via DConf
+* Integrated/(semi-)seamless tab pane a la `kermit`/`urxvt-tabbed`
+* User-customizable tab labeling
+
+### Not Planned
+* Detachable/re-attachable/transferable tabs
+* Image/Multimedia Handling ([_the terminal is not a media player_](https://plato.stanford.edu/entries/category-mistakes/))
 
 Installing
 ----------
 
 Make sure you have VTE with API version 2.91 installed
-along with headers, pkg-config, make and a C compiler.
+along with headers, `pkg-config`, `make` and a C compiler.
 
 ```sh
-$ git clone 'https://github.com/esmil/stupidterm.git'
-$ cd stupidterm
+$ git clone 'https://github.com/marcxjo/stulto.git'
+$ cd stulto
 $ make release
 $ sudo make prefix=/usr install
 ```
 
-The git repo also includes a PKGBUILD for Archlinux and
-a spec-file for RPM based distros to build packages
-directly from git.
-
-There might also be a package in your distribution already:
-
-[![packaging status](https://repology.org/badge/vertical-allrepos/stupidterm.svg)](https://repology.org/metapackage/stupidterm/versions)
+To build stulto on Arch Linux, you can find a PKGBUILD script in the Git repository at
+https://github.com/marcxjo/PKGBUILDs.git (under the subdir `stulto`).
 
 Configuring
 -----------
 
-On startup stupidterm will look for ```stupidterm.ini``` in your user configuration dir.
-Usually ```$HOME/.config/stupidterm.ini```.
+On startup Stulto will look for `stulto/stulto.ini` under your config dir (unless you specify an alternative config
+file).
 
-Copy the included example there and edit it to your hearts content.
-
+Copy the included example there and edit it to your heart's content.
 
 License
 -------
 
-stupidterm is based on the vte example terminal and still licensed under LGPL.
+Stulto is a direct fork of [stupidterm](https://github.com/esmil/stupidterm), with inspiration for enhancements
+liberally lifted form [kermit](https://github.com/orhun/kermit). Credit is hence gratefully given to
+[Emil Renner Berthing](https://github.com/esmil) and [Orhun Parmaksız](https://github.com/orhun) for their respective
+projects.
+
+Stulto is licensed under the GNU GPL v3.0.

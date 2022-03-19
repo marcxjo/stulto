@@ -1,5 +1,5 @@
 /*
- * This file is part of stupidterm.
+ * This file is part of Stulto.
  * Copyright (C) 2001,2002 Red Hat, Inc.
  * Copyright (C) 2013-2015 Emil Renner Berthing
  * Copyright (C) 2022 Marĉjo Givens

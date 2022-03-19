@@ -722,7 +722,7 @@ static gboolean setup(int argc, char *argv[]) {
 
     if (!gtk_init_with_args(
             &argc, &argv,
-            "[-- COMMAND] - The Fool's Terminal",
+            "[-- COMMAND] - A Terminal for Fools",
             options, NULL, &error)) {
         g_printerr("%s\n", error->message);
         g_error_free(error);

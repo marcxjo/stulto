@@ -1,5 +1,5 @@
-Stulto - The Fool's Terminal
-============================
+Stulto - A Terminal for Fools
+=============================
 
 About
 -----

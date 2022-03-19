@@ -69,3 +69,9 @@ liberally lifted form [kermit](https://github.com/orhun/kermit). Credit is hence
 projects.
 
 Stulto is licensed under the GNU GPL v3.0.
+
+About the Name/Tagline
+----------------------
+
+'Stulto' is an Esperanto word that translates to 'foolishness' in English; in other words, Stulto is so named as a
+subtle homage to its predecessor.

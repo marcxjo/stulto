@@ -4,37 +4,56 @@ Stulto - A Terminal for Fools
 About
 -----
 
-Stulto is a simple wrapper around the VTE terminal emulator widget for GTK3.
+Stulto is a simple wrapper around the VTE terminal emulator widget for GTK3. It is forked from [stupidterm](https://github.com/esmil/stupidterm.git).
 
-The main purpose of Stulto is to provide the developer with a simple playground in which to explore and develop GTK/VTE
-features. With the exception of a few configuration settings inherited from `stupidterm`, the intent is to minimize the
-number of features subject to deprecation or obsoletion once they've been added, but users should expect that features
-will be added from time to time. In most cases, they will be made optional when possible.
+Stulto is currently in early development; as such, the feature roadmap is tentative and may change drastically until the
+design is stabilized. This is primarily a pedagogical project for the primary maintainer, but the guiding principle of
+feature development is for Stulto to become usable as a primary terminal emulator for most CLI-/TUI-driven workflows.
 
-Note that this project is not currently accepting feature requests, but will consider doing so once it reaches a more
-mature state.
+'Stulto' is Esperanto for 'foolishness.'
 
 Tentative Roadmap
 -----------------
 
 ### Planned Features
-* Port to GTK4
-* Setting default tab label from terminal prompt
-* Optional support for client-side decorations
-* Support for per-tab terminal profiles
 
-### Architectural Enhancements
-* Split out source into separate files per domain
-* Add support for feature toggling at build time
+Confirmed and prioritized for upcoming development
+
+* Port to GTK4
+* User-configurable tab labels
+* GTK CSDs
+  * May be implemented as optional
+* Terminal profiles per tab
+
+### Long-term Features
+
+These are confirmed for development, but require further design and architectural planning to implement.
+
+* Tilix-/terminator-like terminal tiling
 
 ### Nice-to-Haves
+
+These are not confirmed, but may be implemented in the long term after prior prioritized features have been completed.
+
 * Configuration via DConf
 * Integrated/(semi-)seamless tab pane a la `kermit`/`urxvt-tabbed`
 * User-customizable tab labeling
+* Feature toggling at build time
 
 ### Not Planned
+
+Features from other terminal emulators that will explicitly not be implemented in Stulto
+
 * Detachable/re-attachable/transferable tabs
 * Image/Multimedia Handling ([_the terminal is not a media player_](https://plato.stanford.edu/entries/category-mistakes/))
+
+### Architectural Enhancements
+
+Updates to the codebase for more streamlined development
+
+These generally do not impact the user, but may be of interest to those interested in forking the codebase.
+
+* Modular source architecture
 
 Installing
 ----------
@@ -55,23 +74,19 @@ https://github.com/marcxjo/PKGBUILDs.git (under the subdir `stulto`).
 Configuring
 -----------
 
-On startup Stulto will look for `stulto/stulto.ini` under your config dir (unless you specify an alternative config
-file).
+On startup Stulto will look for `$config_dir/stulto/stulto.ini` under your config dir (unless you specify an alternative
+config file). For most users, `$config_dir` is usually `$XDG_CONFIG_HOME` or `$HOME/.config`.
 
 Copy the included example there and edit it to your heart's content.
 
 License
 -------
 
-Stulto is a direct fork of [stupidterm](https://github.com/esmil/stupidterm), with inspiration for enhancements
-liberally lifted form [kermit](https://github.com/orhun/kermit). Credit is hence gratefully given to
-[Emil Renner Berthing](https://github.com/esmil) and [Orhun Parmaksız](https://github.com/orhun) for their respective
-projects.
-
 Stulto is licensed under the GNU GPL v3.0.
 
-About the Name/Tagline
+Thanks
 ----------------------
 
-'Stulto' is an Esperanto word that translates to 'foolishness' in English; in other words, Stulto is so named as a
-subtle homage to its predecessor.
+* [stupidterm](https://github.com/esmil/stupidterm.git)
+* [kermit](https://github.com/orhun/kermit.git)
+* [tilix](https://github.com/gnunn1/tilix.git)

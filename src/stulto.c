@@ -24,20 +24,12 @@
 
 #include "terminal-config.h"
 
-#ifdef VTE_TYPE_REGEX
-
-#define PCRE2_CODE_UNIT_WIDTH 8
-
-#include <pcre2.h>
-
-#endif
-
 
 
 typedef struct _WindowState {
     GtkWindow *window;
     GtkNotebook *notebook;
-    TermConfig *conf;
+    StultoTerminalConfig *conf;
 } WindowState;
 
 static int exit_status = EXIT_FAILURE;
@@ -171,7 +163,7 @@ static void resize_window(GtkWidget *widget, guint width, guint height, gpointer
 }
 
 static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    TermConfig *conf = data;
+    StultoTerminalConfig *conf = data;
 
     gchar *tab_label = g_strdup_printf("%d: %s", page_num, conf->command_argv[0]);
     gtk_notebook_set_tab_label(notebook, child, gtk_label_new(tab_label));
@@ -308,7 +300,7 @@ static gboolean parse_color(GKeyFile *file, const gchar *filename, const gchar *
     return ret;
 }
 
-static void parse_colors(GKeyFile *file, const gchar *filename, TermConfig *conf) {
+static void parse_colors(GKeyFile *file, const gchar *filename, StultoTerminalConfig *conf) {
     gchar name[8];
     unsigned int i;
 
@@ -332,7 +324,7 @@ static void parse_colors(GKeyFile *file, const gchar *filename, TermConfig *conf
     }
 }
 
-static void parse_urlmatch(GKeyFile *file, const gchar *filename, TermConfig *conf) {
+static void parse_urlmatch(GKeyFile *file, const gchar *filename, StultoTerminalConfig *conf) {
     GError *error = NULL;
     gchar *regex;
 
@@ -388,7 +380,7 @@ static void parse_urlmatch(GKeyFile *file, const gchar *filename, TermConfig *co
     g_free(regex);
 }
 
-static void parse_file(TermConfig *conf, GOptionEntry *options) {
+static void parse_file(StultoTerminalConfig *conf, GOptionEntry *options) {
     GKeyFile *file = g_key_file_new();
     GError *error = NULL;
     GOptionEntry *entry;
@@ -479,7 +471,7 @@ static void parse_file(TermConfig *conf, GOptionEntry *options) {
 static void connect_terminal_signals(VteTerminal *terminal, WindowState *window_state) {
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = GTK_WIDGET(window_state->window);
-    TermConfig *conf = window_state->conf;
+    StultoTerminalConfig *conf = window_state->conf;
 
     /* Connect to the "window_title_changed" signal to set the main window's title */
     g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), window);
@@ -507,7 +499,7 @@ static void connect_terminal_signals(VteTerminal *terminal, WindowState *window_
         g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed), NULL);
 }
 
-static void configure_terminal(VteTerminal *terminal, TermConfig *conf) {
+static void configure_terminal(VteTerminal *terminal, StultoTerminalConfig *conf) {
     /* Set some defaults. */
     vte_terminal_set_scroll_on_output(terminal, conf->scroll_on_output);
     vte_terminal_set_scroll_on_keystroke(terminal, conf->scroll_on_keystroke);
@@ -544,7 +536,7 @@ static void configure_terminal(VteTerminal *terminal, TermConfig *conf) {
     }
 }
 
-static void get_shell_and_title(VteTerminal *terminal, TermConfig *conf, GtkWidget *window) {
+static void get_shell_and_title(VteTerminal *terminal, StultoTerminalConfig *conf, GtkWidget *window) {
     // TODO - eventually we want to split these out and configure the ability to customize the window title
     if (conf->command_argv == NULL || conf->command_argv[0] == NULL) {
         g_strfreev(conf->command_argv);
@@ -617,14 +609,14 @@ static GtkWidget *create_terminal(WindowState *window_state) {
 }
 
 static gboolean setup(int argc, char *argv[]) {
-    TermConfig *conf = g_malloc(sizeof(TermConfig));
+    StultoTerminalConfig *conf = g_malloc(sizeof(StultoTerminalConfig));
     GOptionEntry options[] = {
             {
-                    .long_name = "_TermConfig",
+                    .long_name = "config",
                     .short_name = 'c',
                     .arg = G_OPTION_ARG_STRING,
                     .arg_data = &conf->config_file,
-                    .description = "Specify alternative _TermConfig file",
+                    .description = "Specify alternative config file",
                     .arg_description = "FILE",
             },
             {

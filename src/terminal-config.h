@@ -7,7 +7,14 @@
 
 #include <vte-2.91/vte/vte.h>
 
-typedef struct _TermConfig {
+#ifdef VTE_TYPE_REGEX
+#define PCRE2_CODE_UNIT_WIDTH 8
+
+#include <pcre2.h>
+
+#endif
+
+typedef struct _StultoTerminalConfig {
     gchar *config_file;
     gchar *font;
     gint lines;
@@ -31,6 +38,6 @@ typedef struct _TermConfig {
     GdkRGBA highlight_fg;
     GdkRGBA palette[16];
     gsize palette_size;
-} TermConfig;
+} StultoTerminalConfig;
 
 #endif //TERMINAL_CONFIG_H

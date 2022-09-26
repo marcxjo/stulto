@@ -26,11 +26,11 @@
 
 
 
-typedef struct _WindowState {
+typedef struct _StultoApplication {
     GtkWindow *window;
     GtkNotebook *notebook;
     StultoTerminalConfig *conf;
-} WindowState;
+} StultoApplication;
 
 static int exit_status = EXIT_FAILURE;
 
@@ -38,7 +38,7 @@ static int exit_status = EXIT_FAILURE;
 // breaking
 // TODO - the real fix is to not host every.single.function in one file - this project is big enough to justify a more
 // granular architecture
-static GtkWidget *create_terminal(WindowState *window_state);
+static GtkWidget *create_terminal(StultoApplication *app);
 
 static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -88,18 +88,18 @@ static void delete_event(GtkWidget *window, GdkEvent *event, gpointer data) {
 }
 
 static void child_exited(VteTerminal *widget, int status, gpointer data) {
-    WindowState *window_state = data;
+    StultoApplication *app = data;
 
-    gint numPages = gtk_notebook_get_n_pages(window_state->notebook);
-    gint currentPage = gtk_notebook_get_current_page(window_state->notebook);
+    gint numPages = gtk_notebook_get_n_pages(app->notebook);
+    gint currentPage = gtk_notebook_get_current_page(app->notebook);
 
     if (numPages > 1) {
-        gtk_notebook_remove_page(window_state->notebook, currentPage);
+        gtk_notebook_remove_page(app->notebook, currentPage);
         return;
     }
 
     exit_status = status;
-    destroy_and_quit(GTK_WIDGET(window_state->window));
+    destroy_and_quit(GTK_WIDGET(app->window));
 }
 
 static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
@@ -217,8 +217,8 @@ static void decrease_font_size(GtkWidget *widget, gpointer data) {
 }
 
 static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    WindowState *window_state = data;
-    GtkWidget *window = GTK_WIDGET(window_state->window);
+    StultoApplication *app = data;
+    GtkWidget *window = GTK_WIDGET(app->window);
 
     GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
 
@@ -243,7 +243,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
                 vte_terminal_paste_clipboard((VteTerminal *) widget);
                 return TRUE;
             case GDK_KEY_t:
-                gtk_notebook_append_page(window_state->notebook, create_terminal(data), gtk_label_new("New Tab"));
+                gtk_notebook_append_page(app->notebook, create_terminal(data), gtk_label_new("New Tab"));
                 return TRUE;
         }
     }
@@ -251,10 +251,10 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
     if ((event->key.state & modifiers) == (GDK_CONTROL_MASK)) {
         switch (gdk_keyval_to_lower(event->key.keyval)) {
             case GDK_KEY_Page_Up:
-                gtk_notebook_prev_page(GTK_NOTEBOOK(window_state->notebook));
+                gtk_notebook_prev_page(GTK_NOTEBOOK(app->notebook));
                 return TRUE;
             case GDK_KEY_Page_Down:
-                gtk_notebook_next_page(GTK_NOTEBOOK(window_state->notebook));
+                gtk_notebook_next_page(GTK_NOTEBOOK(app->notebook));
                 return TRUE;
         }
     }
@@ -468,10 +468,10 @@ static void parse_file(StultoTerminalConfig *conf, GOptionEntry *options) {
     g_free(filename);
 }
 
-static void connect_terminal_signals(VteTerminal *terminal, WindowState *window_state) {
+static void connect_terminal_signals(VteTerminal *terminal, StultoApplication *app) {
     GtkWidget *widget = GTK_WIDGET(terminal);
-    GtkWidget *window = GTK_WIDGET(window_state->window);
-    StultoTerminalConfig *conf = window_state->conf;
+    GtkWidget *window = GTK_WIDGET(app->window);
+    StultoTerminalConfig *conf = app->conf;
 
     /* Connect to the "window_title_changed" signal to set the main window's title */
     g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), window);
@@ -486,7 +486,7 @@ static void connect_terminal_signals(VteTerminal *terminal, WindowState *window_
     /* Connect to font tweakage */
     g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size), window);
     g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size), window);
-    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event), window_state);
+    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event), app);
 
     /* Connect to bell signal */
     if (conf->urgent_on_bell) {
@@ -563,9 +563,9 @@ static void get_shell_and_title(VteTerminal *terminal, StultoTerminalConfig *con
 }
 
 static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpointer data) {
-    WindowState *window_state = data;
+    StultoApplication *app = data;
     GtkWidget *widget = GTK_WIDGET(terminal);
-    GtkWidget *window = GTK_WIDGET(window_state->window);
+    GtkWidget *window = GTK_WIDGET(app->window);
 
     if (pid < 0) {
         g_printerr("%s\n", error->message);
@@ -575,26 +575,26 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
         return;
     }
 
-    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited), window_state);
+    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited), app);
 
     gtk_widget_realize(widget);
 }
 
-static GtkWidget *create_terminal(WindowState *window_state) {
-    GtkWidget *window_widget = GTK_WIDGET(window_state->window);
+static GtkWidget *create_terminal(StultoApplication *app) {
+    GtkWidget *window_widget = GTK_WIDGET(app->window);
 
     GtkWidget *terminal_widget = vte_terminal_new();
     VteTerminal *terminal = VTE_TERMINAL(terminal_widget);
 
-    connect_terminal_signals(terminal, window_state);
-    configure_terminal(terminal, window_state->conf);
-    get_shell_and_title(terminal, window_state->conf, window_widget);
+    connect_terminal_signals(terminal, app);
+    configure_terminal(terminal, app->conf);
+    get_shell_and_title(terminal, app->conf, window_widget);
 
     vte_terminal_spawn_async(
             terminal,
             VTE_PTY_DEFAULT,
             NULL,
-            window_state->conf->command_argv,
+            app->conf->command_argv,
             NULL,
             G_SPAWN_SEARCH_PATH,
             NULL,
@@ -603,7 +603,7 @@ static GtkWidget *create_terminal(WindowState *window_state) {
             -1,
             NULL,
             &spawn_callback,
-            (gpointer) window_state);
+            (gpointer) app);
 
     return terminal_widget;
 }
@@ -727,16 +727,16 @@ static gboolean setup(int argc, char *argv[]) {
     notebook = gtk_notebook_new();
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
-    WindowState *window_state = g_malloc(sizeof(WindowState));
-    window_state->window = GTK_WINDOW(window);
-    window_state->notebook = GTK_NOTEBOOK(notebook);
-    window_state->conf = conf;
+    StultoApplication *app = g_malloc(sizeof(StultoApplication));
+    app->window = GTK_WINDOW(window);
+    app->notebook = GTK_NOTEBOOK(notebook);
+    app->conf = conf;
 
     g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), conf);
     g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
-    GtkWidget *term = create_terminal(window_state);
+    GtkWidget *term = create_terminal(app);
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), term, NULL);
 

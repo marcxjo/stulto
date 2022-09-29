@@ -50,7 +50,7 @@ all: $(binary)
 release: CPPFLAGS += -DG_DISABLE_ASSERT -DNDEBUG
 release: $(binary)
 
-$(binary): stulto.c
+$(binary): src/terminal-config.h src/stulto-application.h src/stulto-application.c src/stulto.c
 	$E '  CC/LD   $@'
 	$Q$(CC) $(CFLAGS) $(CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 

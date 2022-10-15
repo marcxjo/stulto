@@ -27,12 +27,6 @@
 #include "terminal-config.h"
 #include "stulto-terminal.h"
 
-typedef struct _StultoApplication {
-    GtkWindow *window;
-    GtkNotebook *notebook;
-    StultoTerminalConfig *conf;
-} StultoApplication;
-
 static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
     GdkVisual *visual = NULL;
@@ -399,11 +393,6 @@ gboolean stulto_application_init(int argc, char *argv[]) {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
     gtk_container_add(GTK_CONTAINER(window), notebook);
-
-    StultoApplication *app = g_malloc(sizeof(StultoApplication));
-    app->window = GTK_WINDOW(window);
-    app->notebook = GTK_NOTEBOOK(notebook);
-    app->conf = conf;
 
     g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), conf);
     g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);

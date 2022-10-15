@@ -1,7 +1,5 @@
 /*
  * This file is part of Stulto.
- * Copyright (C) 2001,2002 Red Hat, Inc.
- * Copyright (C) 2013-2015 Emil Renner Berthing
  * Copyright (C) 2022 Marĉjo Givens
  *
  * This is free software; you can redistribute it and/or modify it under
@@ -19,15 +17,24 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <vte/vte.h>
+/*
+ * Exit status as an app state variable is a concept inherited from the stupidterm codebase
+ * We'll remove this module once we refactor Stulto to depend on GtkApplication's lifecycle management
+ */
 
-#include "stulto-application.h"
-#include "exit-status.h"
+#ifndef EXIT_STATUS_H
+#define EXIT_STATUS_H
 
-int main(int argc, char *argv[]) {
-    if (stulto_application_init(argc, argv)) {
-        gtk_main();
-    }
+#include <gtk/gtk.h>
 
-    return stulto_get_exit_status();
-}
+int stulto_get_exit_status();
+
+void stulto_set_exit_status(int status);
+
+/*
+ * This isn't exactly the right place for this function, but as it's currently used in two modules and isn't worth
+ * adding another, we'll live with the loose fit until _this_ module is refactored away
+ */
+void destroy_and_quit(GtkWidget *window);
+
+#endif //EXIT_STATUS_H

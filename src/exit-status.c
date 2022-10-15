@@ -1,7 +1,5 @@
 /*
  * This file is part of Stulto.
- * Copyright (C) 2001,2002 Red Hat, Inc.
- * Copyright (C) 2013-2015 Emil Renner Berthing
  * Copyright (C) 2022 Marĉjo Givens
  *
  * This is free software; you can redistribute it and/or modify it under
@@ -19,15 +17,20 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <vte/vte.h>
-
-#include "stulto-application.h"
 #include "exit-status.h"
 
-int main(int argc, char *argv[]) {
-    if (stulto_application_init(argc, argv)) {
-        gtk_main();
-    }
+int exit_status = EXIT_FAILURE;
 
-    return stulto_get_exit_status();
+int stulto_get_exit_status() {
+    return exit_status;
+}
+
+void stulto_set_exit_status(int status) {
+    exit_status = status;
+}
+
+void destroy_and_quit(GtkWidget *window) {
+    gtk_widget_destroy(window);
+
+    gtk_main_quit();
 }

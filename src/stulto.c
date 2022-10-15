@@ -22,6 +22,7 @@
 #include <vte/vte.h>
 
 #include "stulto-application.h"
+#include "exit-status.h"
 
 int main(int argc, char *argv[]) {
     if (stulto_application_init(argc, argv)) {

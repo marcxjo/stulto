@@ -728,6 +728,7 @@ gboolean stulto_application_init(int argc, char *argv[]) {
 
     /* Create the terminal widget and add it to the window */
     notebook = gtk_notebook_new();
+    gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
     StultoApplication *app = g_malloc(sizeof(StultoApplication));

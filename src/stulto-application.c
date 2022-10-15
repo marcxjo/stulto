@@ -61,7 +61,17 @@ static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer da
 static void window_title_changed(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
-    gtk_window_set_title(window, vte_terminal_get_window_title(VTE_TERMINAL(widget)));
+    GtkWidget *notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
+
+    gint num_tabs = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
+    gint cur_tab = gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+    gchar *new_title = g_strdup_printf(
+            "[%d/%d] %s",
+            cur_tab + 1,
+            num_tabs,
+            vte_terminal_get_window_title(VTE_TERMINAL(widget)));
+
+    gtk_window_set_title(window, new_title);
 }
 
 static void handle_bell(GtkWidget *widget, gpointer data) {
@@ -177,6 +187,18 @@ static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, 
 
 static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
     gtk_widget_show(child);
+
+    gint num_tabs = gtk_notebook_get_n_pages(notebook);
+    gint cur_tab = gtk_notebook_page_num(notebook, child);
+
+    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
+    gchar *new_title = g_strdup_printf(
+            "[%d/%d] %s",
+            cur_tab + 1,
+            num_tabs,
+            vte_terminal_get_window_title(VTE_TERMINAL(child)));
+
+    gtk_window_set_title(GTK_WINDOW(window), new_title);
 }
 
 static void adjust_font_size(GtkWidget *widget, GtkWindow *window, gdouble factor) {
@@ -476,7 +498,7 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoApplication *a
     GtkWidget *window = GTK_WIDGET(app->window);
     StultoTerminalConfig *conf = app->conf;
 
-    /* Connect to the "window_title_changed" signal to set the main window's title */
+    /* Connect to the "window-title-changed" signal to set the main window's title */
     g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), window);
 
     /* Connect to the "button-press" event. */

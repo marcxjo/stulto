@@ -1,3 +1,4 @@
 stulto
 pkg
 *.pkg.tar.*
+.idea/

@@ -185,35 +185,18 @@ static void parse_urlmatch(GKeyFile *file, const gchar *filename, StultoTerminal
     g_free(regex);
 }
 
-static void parse_file(StultoTerminalConfig *conf, GOptionEntry *options) {
-    GKeyFile *file = g_key_file_new();
-    GError *error = NULL;
+static void parse_file(StultoTerminalConfig *conf, GKeyFile *file, gchar *filename) {
+    if (g_key_file_has_group(file, "colors")) {
+        parse_colors(file, filename, conf);
+    }
+    if (g_key_file_has_group(file, "urlmatch")) {
+        parse_urlmatch(file, filename, conf);
+    }
+}
+
+static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
     GOptionEntry *entry;
     gboolean option;
-    gchar *filename;
-
-    if (conf->config_file) {
-        filename = conf->config_file;
-    } else {
-        filename = g_build_filename(g_get_user_config_dir(), "stulto", "stulto.ini", NULL);
-    }
-
-    g_key_file_load_from_file(file, filename, G_KEY_FILE_NONE, &error);
-
-    if (error) {
-        switch (error->code) {
-            case G_FILE_ERROR_NOENT:
-            case G_KEY_FILE_ERROR_NOT_FOUND:
-                break;
-            default:
-                g_printerr("Error opening '%s': %s\n", filename, error->message);
-        }
-        g_error_free(error);
-        g_key_file_free(file);
-        g_free(filename);
-
-        return;
-    }
 
     for (entry = options; entry->long_name; entry++) {
         switch (entry->arg) {
@@ -261,16 +244,6 @@ static void parse_file(StultoTerminalConfig *conf, GOptionEntry *options) {
             error = NULL;
         }
     }
-
-    if (g_key_file_has_group(file, "colors")) {
-        parse_colors(file, filename, conf);
-    }
-    if (g_key_file_has_group(file, "urlmatch")) {
-        parse_urlmatch(file, filename, conf);
-    }
-
-    g_key_file_free(file);
-    g_free(filename);
 }
 
 gboolean stulto_application_init(int argc, char *argv[]) {
@@ -365,7 +338,34 @@ gboolean stulto_application_init(int argc, char *argv[]) {
         return FALSE;
     }
 
-    parse_file(conf, options);
+    gchar *filename = conf->config_file
+            ? conf->config_file
+            : g_build_filename(
+            g_get_user_config_dir(),
+            "stulto",
+            "stulto.ini",
+            NULL);
+
+    GKeyFile *file = g_key_file_new();
+    g_key_file_load_from_file(file, filename, G_KEY_FILE_NONE, &error);
+
+    if (error) {
+        switch (error->code) {
+            case G_FILE_ERROR_NOENT:
+            case G_KEY_FILE_ERROR_NOT_FOUND:
+                break;
+            default:
+                g_printerr("Error opening '%s': %s\n", filename, error->message);
+        }
+        g_error_free(error);
+        g_key_file_free(file);
+        g_free(filename);
+
+        return FALSE;
+    }
+
+    parse_file(conf, file, filename);
+    parse_options(options, file, filename, error);
 
     /* Create a window to hold the scrolling shell, and hook its
      * delete event to the quit function.. */

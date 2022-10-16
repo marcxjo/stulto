@@ -129,6 +129,10 @@ static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename
 
 gboolean stulto_application_init(int argc, char *argv[]) {
     StultoTerminalConfig *conf = g_malloc(sizeof(StultoTerminalConfig));
+
+    // TODO - when we refactor to GtkApplication, most of these options will go away
+    // Those that remain should live in the application type rather than tangled up with the config model
+    // (i.e., if it can live in the config file, it should _only_ live there)
     GOptionEntry options[] = {
             {
                     .long_name = "config",

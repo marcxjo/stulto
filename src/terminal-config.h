@@ -55,4 +55,6 @@ typedef struct _StultoTerminalConfig {
     gsize palette_size;
 } StultoTerminalConfig;
 
+void stulto_terminal_config_parse(StultoTerminalConfig *conf, GKeyFile *file, gchar *filename);
+
 #endif //TERMINAL_CONFIG_H

@@ -25,7 +25,7 @@
 #include "exit-status.h"
 
 int main(int argc, char *argv[]) {
-    if (stulto_application_init(argc, argv)) {
+    if (stulto_application_create(argc, argv)) {
         gtk_main();
     }
 

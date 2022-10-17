@@ -45,7 +45,7 @@ static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer da
 static void delete_event(GtkWidget *window, GdkEvent *event, gpointer data) {
     stulto_set_exit_status(EXIT_SUCCESS);
 
-    destroy_and_quit(window);
+    stulto_destroy_and_quit(window);
 }
 
 static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
@@ -127,7 +127,7 @@ static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename
     }
 }
 
-gboolean stulto_application_init(int argc, char *argv[]) {
+gboolean stulto_application_create(int argc, char *argv[]) {
     StultoTerminalConfig *conf = g_malloc(sizeof(StultoTerminalConfig));
 
     // TODO - when we refactor to GtkApplication, most of these options will go away
@@ -283,7 +283,7 @@ gboolean stulto_application_init(int argc, char *argv[]) {
     g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
-    GtkWidget *term = create_terminal(conf);
+    GtkWidget *term = stulto_terminal_create(conf);
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), term, NULL);
 

@@ -24,6 +24,6 @@
 
 #include "terminal-config.h"
 
-GtkWidget *create_terminal(StultoTerminalConfig *conf);
+GtkWidget *stulto_terminal_create(StultoTerminalConfig *conf);
 
 #endif //STULTO_TERMINAL_H

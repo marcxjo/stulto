@@ -64,7 +64,7 @@ static void child_exited(VteTerminal *widget, int status, gpointer data) {
     }
 
     stulto_set_exit_status(status);
-    destroy_and_quit(window);
+    stulto_destroy_and_quit(window);
 }
 
 static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
@@ -194,7 +194,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
                 vte_terminal_paste_clipboard((VteTerminal *) widget);
                 return TRUE;
             case GDK_KEY_t:
-                gtk_notebook_append_page(GTK_NOTEBOOK(notebook), create_terminal(data), gtk_label_new("New Tab"));
+                gtk_notebook_append_page(GTK_NOTEBOOK(notebook), stulto_terminal_create(data), gtk_label_new("New Tab"));
                 return TRUE;
         }
     }
@@ -316,7 +316,7 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
     if (pid < 0) {
         g_printerr("%s\n", error->message);
         g_error_free(error);
-        destroy_and_quit(window);
+        stulto_destroy_and_quit(window);
 
         return;
     }
@@ -326,7 +326,7 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
     gtk_widget_realize(widget);
 }
 
-GtkWidget *create_terminal(StultoTerminalConfig *conf) {
+GtkWidget *stulto_terminal_create(StultoTerminalConfig *conf) {
     GtkWidget *terminal_widget = vte_terminal_new();
 
     VteTerminal *terminal = VTE_TERMINAL(terminal_widget);

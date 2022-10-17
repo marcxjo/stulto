@@ -22,7 +22,7 @@
 
 #include <glib.h>
 
-gboolean stulto_application_init(int argc, char *argv[]);
+gboolean stulto_application_create(int argc, char *argv[]);
 
 int stulto_get_exit_status();
 

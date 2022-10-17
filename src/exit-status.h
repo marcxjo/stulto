@@ -35,6 +35,6 @@ void stulto_set_exit_status(int status);
  * This isn't exactly the right place for this function, but as it's currently used in two modules and isn't worth
  * adding another, we'll live with the loose fit until _this_ module is refactored away
  */
-void destroy_and_quit(GtkWidget *window);
+void stulto_destroy_and_quit(GtkWidget *window);
 
 #endif //EXIT_STATUS_H

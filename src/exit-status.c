@@ -29,7 +29,7 @@ void stulto_set_exit_status(int status) {
     exit_status = status;
 }
 
-void destroy_and_quit(GtkWidget *window) {
+void stulto_destroy_and_quit(GtkWidget *window) {
     gtk_widget_destroy(window);
 
     gtk_main_quit();

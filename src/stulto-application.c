@@ -45,7 +45,7 @@ static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer da
 static void delete_event(GtkWidget *window, GdkEvent *event, gpointer data) {
     stulto_set_exit_status(EXIT_SUCCESS);
 
-    destroy_and_quit(window);
+    stulto_destroy_and_quit(window);
 }
 
 static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {

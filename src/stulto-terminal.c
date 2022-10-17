@@ -64,7 +64,7 @@ static void child_exited(VteTerminal *widget, int status, gpointer data) {
     }
 
     stulto_set_exit_status(status);
-    destroy_and_quit(window);
+    stulto_destroy_and_quit(window);
 }
 
 static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
@@ -316,7 +316,7 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
     if (pid < 0) {
         g_printerr("%s\n", error->message);
         g_error_free(error);
-        destroy_and_quit(window);
+        stulto_destroy_and_quit(window);
 
         return;
     }

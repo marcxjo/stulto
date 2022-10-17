@@ -283,7 +283,7 @@ gboolean stulto_application_init(int argc, char *argv[]) {
     g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
-    GtkWidget *term = create_terminal(conf);
+    GtkWidget *term = stulto_terminal_create(conf);
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), term, NULL);
 

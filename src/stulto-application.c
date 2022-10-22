@@ -26,6 +26,7 @@
 #include "exit-status.h"
 #include "terminal-config.h"
 #include "stulto-terminal.h"
+#include "stulto-headerbar.h"
 
 static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -59,17 +60,31 @@ static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, 
 }
 
 static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
+    gboolean *enable_headerbar = data;
     gtk_widget_show(child);
 
     gint num_tabs = gtk_notebook_get_n_pages(notebook);
     gint cur_tab = gtk_notebook_page_num(notebook, child);
 
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
-    gchar *new_title = g_strdup_printf(
-            "[%d/%d] %s",
-            cur_tab + 1,
-            num_tabs,
-            vte_terminal_get_window_title(VTE_TERMINAL(child)));
+
+    gchar *new_title;
+
+    if (*enable_headerbar)
+    {
+        new_title = g_strdup_printf("Stulto: %s", vte_terminal_get_window_title(VTE_TERMINAL(child)));
+
+        // Not currently used, but we'll eventually plug it in to update the headerbar's session indicator
+        // gchar *new_session_state = g_strdup_printf("%d/%d", cur_tab + 1, num_tabs);
+        // TODO - update session state indicator
+        // g_free(new_session_state);
+    } else {
+        new_title = g_strdup_printf(
+                "[%d/%d] %s",
+                cur_tab + 1,
+                num_tabs,
+                vte_terminal_get_window_title(VTE_TERMINAL(child)));
+    }
 
     gtk_window_set_title(GTK_WINDOW(window), new_title);
     g_free(new_title);
@@ -203,6 +218,12 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .description = "Set window urgency hint on bell",
             },
             {
+                    .long_name = "enable-headerbar",
+                    .arg = G_OPTION_ARG_NONE,
+                    .arg_data = &conf->enable_headerbar,
+                    .description = "Enable CSD-style headerbar",
+            },
+            {
                     .long_name = G_OPTION_REMAINING,
                     .arg = G_OPTION_ARG_STRING_ARRAY,
                     .arg_data = &conf->command_argv,
@@ -257,6 +278,12 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
 
+    if (conf->enable_headerbar)
+    {
+        GtkWidget *header_bar = stulto_headerbar_create();
+        gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
+    }
+
     /* Fix transparency in GNOME/Mutter */
     gtk_widget_set_app_paintable(window, TRUE);
 
@@ -280,7 +307,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
     g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), conf);
-    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
+    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), &conf->enable_headerbar);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
     GtkWidget *term = stulto_terminal_create(conf);

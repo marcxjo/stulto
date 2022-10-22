@@ -209,6 +209,12 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .description = "Set window urgency hint on bell",
             },
             {
+                    .long_name = "enable-headerbar",
+                    .arg = G_OPTION_ARG_NONE,
+                    .arg_data = &conf->enable_headerbar,
+                    .description = "Enable CSD-style headerbar",
+            },
+            {
                     .long_name = G_OPTION_REMAINING,
                     .arg = G_OPTION_ARG_STRING_ARRAY,
                     .arg_data = &conf->command_argv,
@@ -263,8 +269,11 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
 
-    GtkWidget *header_bar = stulto_headerbar_create();
-    gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
+    if (conf->enable_headerbar)
+    {
+        GtkWidget *header_bar = stulto_headerbar_create();
+        gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
+    }
 
     /* Fix transparency in GNOME/Mutter */
     gtk_widget_set_app_paintable(window, TRUE);

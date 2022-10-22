@@ -40,6 +40,7 @@ typedef struct _StultoTerminalConfig {
     gboolean mouse_autohide;
     gboolean sync_clipboard;
     gboolean urgent_on_bell;
+    gboolean enable_headerbar;
     gchar **command_argv;
 #ifdef VTE_TYPE_REGEX
     VteRegex *regex;

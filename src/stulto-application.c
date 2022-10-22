@@ -66,13 +66,18 @@ static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num,
 
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
     gchar *new_title = g_strdup_printf(
-            "[%d/%d] %s",
-            cur_tab + 1,
-            num_tabs,
+            "Stulto: %s",
             vte_terminal_get_window_title(VTE_TERMINAL(child)));
+
+    // Not currently used, but we'll eventually plug it in to update the headerbar's session indicator
+    gchar *new_session_state = g_strdup_printf(
+            "%d/%d",
+            cur_tab + 1,
+            num_tabs);
 
     gtk_window_set_title(GTK_WINDOW(window), new_title);
     g_free(new_title);
+    g_free(new_session_state);
 }
 
 static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {

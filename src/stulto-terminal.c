@@ -27,14 +27,21 @@ static void window_title_changed(GtkWidget *widget, gpointer data) {
 
     gint num_tabs = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
     gint cur_tab = gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+
     gchar *new_title = g_strdup_printf(
-            "[%d/%d] %s",
-            cur_tab + 1,
-            num_tabs,
+            "Stulto: %s",
             vte_terminal_get_window_title(VTE_TERMINAL(widget)));
 
+    // Not currently used, but we'll eventually plug it in to update the headerbar's session indicator
+    gchar *new_session_state = g_strdup_printf(
+            "%d/%d",
+            cur_tab + 1,
+            num_tabs);
+
     gtk_window_set_title(GTK_WINDOW(window), new_title);
+
     g_free(new_title);
+    g_free(new_session_state);
 }
 
 static void handle_bell(GtkWidget *widget, gpointer data) {

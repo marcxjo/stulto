@@ -52,6 +52,7 @@ release: $(binary)
 
 $(binary): src/terminal-config.h src/terminal-config.c \
            src/exit-status.h src/exit-status.c \
+           src/stulto-headerbar.h src/stulto-headerbar.c \
            src/stulto-terminal.h src/stulto-terminal.c \
            src/stulto-application.h src/stulto-application.c \
            src/stulto.c

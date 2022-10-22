@@ -26,6 +26,7 @@
 #include "exit-status.h"
 #include "terminal-config.h"
 #include "stulto-terminal.h"
+#include "stulto-headerbar.h"
 
 static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -261,6 +262,9 @@ gboolean stulto_application_create(int argc, char *argv[]) {
      * delete event to the quit function.. */
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
+
+    GtkWidget *header_bar = stulto_headerbar_create();
+    gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
 
     /* Fix transparency in GNOME/Mutter */
     gtk_widget_set_app_paintable(window, TRUE);

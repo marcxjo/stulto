@@ -23,7 +23,6 @@ GtkWidget *stulto_headerbar_create() {
     GtkWidget *header_bar = gtk_header_bar_new();
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
     gtk_header_bar_set_has_subtitle(GTK_HEADER_BAR(header_bar), FALSE);
-//    gtk_header_bar_set_subtitle(GTK_HEADER_BAR(header_bar), "Stulto");
 
     GtkWidget *nav_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 

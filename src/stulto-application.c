@@ -158,8 +158,6 @@ gboolean stulto_application_create(int argc, char *argv[]) {
             },
             {} /* terminator */
     };
-    GtkWidget *window;
-    GtkWidget *notebook;
     GError *error = NULL;
 
     if (!gtk_init_with_args(
@@ -203,7 +201,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
 
     /* Create a window to hold the scrolling shell, and hook its
      * delete event to the quit function.. */
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    GtkWidget * window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event_cb), NULL);
 
     if (config->enable_headerbar)
@@ -225,7 +223,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     }
 
     /* Create the terminal widget and add it to the window */
-    notebook = gtk_notebook_new();
+    GtkWidget *notebook = gtk_notebook_new();
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
     gtk_container_add(GTK_CONTAINER(window), notebook);

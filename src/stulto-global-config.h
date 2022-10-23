@@ -24,9 +24,7 @@
 
 typedef struct _StultoGlobalConfig {
     gchar *role;
-    gboolean nodecorations;
     gboolean enable_headerbar;
-    gchar **command_argv;
 } StultoGlobalConfig;
 
 #endif //STULTO_GLOBAL_CONFIG_H

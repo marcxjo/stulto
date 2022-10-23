@@ -21,20 +21,20 @@
 
 #include "exit-status.h"
 
-static void window_title_changed(GtkWidget *widget, gpointer data) {
+static void window_title_changed_cb(GtkWidget *widget, gpointer data) {
     /* TODO - we were previously passing in a pointer to the window to update its title
      * What we instead want to do is pick up the notify signal for the terminal's `window-title` property
      * At that point, we should also remove this now vestigial comeback
      */
 }
 
-static void handle_bell(GtkWidget *widget, gpointer data) {
+static void bell_cb(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
     gtk_window_set_urgency_hint(window, TRUE);
 }
 
-static int handle_focus_in(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static int focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     GtkWindow *window = data;
 
     gtk_window_set_urgency_hint(window, FALSE);
@@ -42,7 +42,7 @@ static int handle_focus_in(GtkWidget *widget, GdkEvent *event, gpointer data) {
     return FALSE;
 }
 
-static void child_exited(VteTerminal *widget, int status, gpointer data) {
+static void child_exited_cb(VteTerminal *widget, int status, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
     GtkWidget *notebook = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_NOTEBOOK);
 
@@ -58,7 +58,7 @@ static void child_exited(VteTerminal *widget, int status, gpointer data) {
     stulto_destroy_and_quit(window);
 }
 
-static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static gboolean button_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     gchar *program = data;
 
     char *match;
@@ -85,7 +85,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer 
     return FALSE;
 }
 
-static void resize_window(GtkWidget *widget, guint width, guint height, gpointer data) {
+static void resize_window_cb(GtkWidget *widget, guint width, guint height, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     VteTerminal *terminal = VTE_TERMINAL(widget);
 
@@ -146,19 +146,19 @@ static void adjust_font_size(GtkWidget *widget, GtkWindow *window, gdouble facto
             rows * char_height + oheight);
 }
 
-static void increase_font_size(GtkWidget *widget, gpointer data) {
+static void increase_font_size_cb(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
     adjust_font_size(widget, window, 1.125);
 }
 
-static void decrease_font_size(GtkWidget *widget, gpointer data) {
+static void decrease_font_size_cb(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
     adjust_font_size(widget, window, 1. / 1.125);
 }
 
-static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     GtkWidget *notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
 
@@ -169,10 +169,10 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
     if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
         switch (event->key.hardware_keycode) {
             case 21: /* + on US keyboards */
-                increase_font_size(widget, window);
+                increase_font_size_cb(widget, window);
                 return TRUE;
             case 20: /* - on US keyboards */
-                decrease_font_size(widget, window);
+                decrease_font_size_cb(widget, window);
                 return TRUE;
         }
         switch (gdk_keyval_to_lower(event->key.keyval)) {
@@ -204,7 +204,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
     return FALSE;
 }
 
-static gboolean selection_changed(VteTerminal *terminal, gpointer data) {
+static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
     if (vte_terminal_get_has_selection(terminal)) {
         vte_terminal_copy_clipboard_format(terminal, VTE_FORMAT_TEXT);
     }
@@ -217,29 +217,29 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfil
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 
     /* Connect to the "window-title-changed" signal to set the main window's title */
-    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), NULL);
+    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed_cb), NULL);
 
     /* Connect to the "button-press" event. */
     if (profile->program)
-        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event), profile->program);
+        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event_cb), profile->program);
 
     /* Connect to application request signals. */
-    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window), window);
+    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window_cb), window);
 
     /* Connect to font tweakage */
-    g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size), window);
-    g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size), window);
-    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event), profile);
+    g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size_cb), window);
+    g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size_cb), window);
+    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event_cb), profile);
 
     /* Connect to bell signal */
     if (profile->urgent_on_bell) {
-        g_signal_connect(widget, "bell", G_CALLBACK(handle_bell), window);
-        g_signal_connect(widget, "focus-in-event", G_CALLBACK(handle_focus_in), window);
+        g_signal_connect(widget, "bell", G_CALLBACK(bell_cb), window);
+        g_signal_connect(widget, "focus-in-event", G_CALLBACK(focus_in_event_cb), window);
     }
 
     /* Sync clipboard */
     if (profile->sync_clipboard)
-        g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed), NULL);
+        g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed_cb), NULL);
 }
 
 static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *profile) {
@@ -312,7 +312,7 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
         return;
     }
 
-    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited), NULL);
+    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited_cb), NULL);
 
     gtk_widget_realize(widget);
 }

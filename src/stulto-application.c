@@ -29,7 +29,7 @@
 #include "stulto-headerbar.h"
 #include "stulto-app-config.h"
 
-static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
+static void screen_changed_cb(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
     GdkVisual *visual = NULL;
 
@@ -44,13 +44,13 @@ static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer da
     gtk_widget_set_visual(widget, visual);
 }
 
-static void delete_event(GtkWidget *window, GdkEvent *event, gpointer data) {
+static void delete_event_cb(GtkWidget *window, GdkEvent *event, gpointer data) {
     stulto_set_exit_status(EXIT_SUCCESS);
 
     stulto_destroy_and_quit(window);
 }
 
-static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
+static void page_added_cb(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
     StultoTerminalProfile *profile = data;
 
     gchar *tab_label = g_strdup_printf("%d: %s", page_num, profile->command_argv[0]);
@@ -60,7 +60,7 @@ static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, 
     gtk_notebook_set_current_page(notebook, (gint) page_num);
 }
 
-static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
+static void switch_page_cb(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
     gtk_widget_show(child);
     /* TODO - we were previously passing in a pointer to the window to update its title
      * What we instead want to do is pick up the notify signal for the notebook's `page` property
@@ -204,7 +204,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     /* Create a window to hold the scrolling shell, and hook its
      * delete event to the quit function.. */
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
+    g_signal_connect(window, "delete-event", G_CALLBACK(delete_event_cb), NULL);
 
     if (config->enable_headerbar)
     {
@@ -216,8 +216,8 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     gtk_widget_set_app_paintable(window, TRUE);
 
     /* Use rgba colour map if possible */
-    screen_changed(window, NULL, NULL);
-    g_signal_connect(window, "screen-changed", G_CALLBACK(screen_changed), NULL);
+    screen_changed_cb(window, NULL, NULL);
+    g_signal_connect(window, "screen-changed", G_CALLBACK(screen_changed_cb), NULL);
 
     if (config->role) {
         gtk_window_set_role(GTK_WINDOW(window), config->role);
@@ -230,8 +230,8 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
-    g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), profile);
-    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
+    g_signal_connect(notebook, "page-added", G_CALLBACK(page_added_cb), profile);
+    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page_cb), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
     GtkWidget *term = stulto_terminal_create(profile);

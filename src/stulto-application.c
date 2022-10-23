@@ -60,34 +60,10 @@ static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, 
 }
 
 static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    gboolean *enable_headerbar = data;
     gtk_widget_show(child);
-
-    gint num_tabs = gtk_notebook_get_n_pages(notebook);
-    gint cur_tab = gtk_notebook_page_num(notebook, child);
-
-    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
-
-    gchar *new_title;
-
-    if (*enable_headerbar)
-    {
-        new_title = g_strdup_printf("Stulto: %s", vte_terminal_get_window_title(VTE_TERMINAL(child)));
-
-        // Not currently used, but we'll eventually plug it in to update the headerbar's session indicator
-        // gchar *new_session_state = g_strdup_printf("%d/%d", cur_tab + 1, num_tabs);
-        // TODO - update session state indicator
-        // g_free(new_session_state);
-    } else {
-        new_title = g_strdup_printf(
-                "[%d/%d] %s",
-                cur_tab + 1,
-                num_tabs,
-                vte_terminal_get_window_title(VTE_TERMINAL(child)));
-    }
-
-    gtk_window_set_title(GTK_WINDOW(window), new_title);
-    g_free(new_title);
+    /* TODO - we were previously passing in a pointer to the window to update its title
+     * What we instead want to do is pick up the notify signal for the notebook's `page` property
+     */
 }
 
 static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
@@ -307,7 +283,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
     g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), conf);
-    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), &conf->enable_headerbar);
+    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
     GtkWidget *term = stulto_terminal_create(conf);

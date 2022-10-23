@@ -22,34 +22,10 @@
 #include "exit-status.h"
 
 static void window_title_changed(GtkWidget *widget, gpointer data) {
-    gboolean *enable_headerbar = data;
-    GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
-    GtkWidget *notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
-
-    gint num_tabs = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
-    gint cur_tab = gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
-
-    gchar *new_title;
-
-    if (*enable_headerbar)
-    {
-        new_title = g_strdup_printf("Stulto: %s", vte_terminal_get_window_title(VTE_TERMINAL(widget)));
-
-        // Not currently used, but we'll eventually plug it in to update the headerbar's session indicator
-        // gchar *new_session_state = g_strdup_printf("%d/%d", cur_tab + 1, num_tabs);
-        // TODO - update session state indicator
-        // g_free(new_session_state);
-    } else {
-        new_title = g_strdup_printf(
-                "[%d/%d] %s",
-                cur_tab + 1,
-                num_tabs,
-                vte_terminal_get_window_title(VTE_TERMINAL(widget)));
-    }
-
-    gtk_window_set_title(GTK_WINDOW(window), new_title);
-
-    g_free(new_title);
+    /* TODO - we were previously passing in a pointer to the window to update its title
+     * What we instead want to do is pick up the notify signal for the terminal's `window-title` property
+     * At that point, we should also remove this now vestigial comeback
+     */
 }
 
 static void handle_bell(GtkWidget *widget, gpointer data) {
@@ -241,7 +217,7 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalConfig
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 
     /* Connect to the "window-title-changed" signal to set the main window's title */
-    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), &conf->enable_headerbar);
+    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), NULL);
 
     /* Connect to the "button-press" event. */
     if (conf->program)

@@ -118,44 +118,14 @@ static void resize_window_cb(GtkWidget *widget, guint width, guint height, gpoin
                       width + owidth, height + oheight);
 }
 
-static void adjust_font_size(GtkWidget *widget, GtkWindow *window, gdouble factor) {
-    VteTerminal *terminal = VTE_TERMINAL(widget);
-    glong rows = vte_terminal_get_row_count(terminal);
-    glong columns = vte_terminal_get_column_count(terminal);
-    glong char_width = vte_terminal_get_char_width(terminal);
-    glong char_height = vte_terminal_get_char_height(terminal);
-    gint owidth;
-    gint oheight;
-    gdouble scale;
-
-    /* Take into account padding and border overhead. */
-    gtk_window_get_size(window, &owidth, &oheight);
-    owidth -= char_width * columns;
-    oheight -= char_height * rows;
-
-    scale = vte_terminal_get_font_scale(terminal);
-    vte_terminal_set_font_scale(terminal, scale * factor);
-
-    /* This above call will have changed the char size! */
-    char_width = vte_terminal_get_char_width(terminal);
-    char_height = vte_terminal_get_char_height(terminal);
-
-    gtk_window_resize(
-            window,
-            columns * char_width + owidth,
-            rows * char_height + oheight);
+static void increase_font_size(GtkWidget *widget) {
+    gdouble scale = vte_terminal_get_font_scale(VTE_TERMINAL(widget));
+    vte_terminal_set_font_scale(VTE_TERMINAL(widget), scale * 1.125);
 }
 
-static void increase_font_size_cb(GtkWidget *widget, gpointer data) {
-    GtkWindow *window = data;
-
-    adjust_font_size(widget, window, 1.125);
-}
-
-static void decrease_font_size_cb(GtkWidget *widget, gpointer data) {
-    GtkWindow *window = data;
-
-    adjust_font_size(widget, window, 1. / 1.125);
+static void decrease_font_size(GtkWidget *widget) {
+    gdouble scale = vte_terminal_get_font_scale(VTE_TERMINAL(widget));
+    vte_terminal_set_font_scale(VTE_TERMINAL(widget), scale / 1.125);
 }
 
 static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
@@ -168,10 +138,10 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
     if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
         switch (event->key.hardware_keycode) {
             case 21: /* + on US keyboards */
-                increase_font_size_cb(widget, window);
+                increase_font_size(widget);
                 return TRUE;
             case 20: /* - on US keyboards */
-                decrease_font_size_cb(widget, window);
+                decrease_font_size(widget);
                 return TRUE;
         }
         switch (gdk_keyval_to_lower(event->key.keyval)) {
@@ -225,9 +195,6 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfil
     /* Connect to application request signals. */
     g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window_cb), window);
 
-    /* Connect to font tweakage */
-    g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size_cb), window);
-    g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size_cb), window);
     g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event_cb), profile);
 
     /* Connect to bell signal */

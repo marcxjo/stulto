@@ -134,22 +134,6 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .arg_description = "FILE",
             },
             {
-                    .long_name = "font",
-                    .short_name = 'f',
-                    .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &conf->font,
-                    .description = "Specify a font to use",
-                    .arg_description = "FONT",
-            },
-            {
-                    .long_name = "lines",
-                    .short_name = 'n',
-                    .arg = G_OPTION_ARG_INT,
-                    .arg_data = &conf->lines,
-                    .description = "Specify the number of scrollback lines",
-                    .arg_description = "LINES",
-            },
-            {
                     .long_name = "role",
                     .short_name = 'r',
                     .arg = G_OPTION_ARG_STRING,
@@ -158,42 +142,8 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .arg_description = "ROLE",
             },
             {
-                    .long_name = "no-decorations",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->nodecorations,
-                    .description = "Disable window decorations",
-            },
-            {
-                    .long_name = "scroll-on-output",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->scroll_on_output,
-                    .description = "Toggle scroll on output",
-            },
-            {
-                    .long_name = "scroll-on-keystroke",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->scroll_on_keystroke,
-                    .description = "Toggle scroll on keystroke",
-            },
-            {
-                    .long_name = "mouse-autohide",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->mouse_autohide,
-                    .description = "Toggle autohiding the mouse cursor",
-            },
-            {
-                    .long_name = "sync-clipboard",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->sync_clipboard,
-                    .description = "Update both primary and clipboard on selection",
-            },
-            {
-                    .long_name = "urgent-on-bell",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->urgent_on_bell,
-                    .description = "Set window urgency hint on bell",
-            },
-            {
+                    // TODO - this will become opt-out once the headerbar design is fully implemented
+                    // (Assuming there hasn't yet been user uptake AND users don't voice strong opposition)
                     .long_name = "enable-headerbar",
                     .arg = G_OPTION_ARG_NONE,
                     .arg_data = &conf->enable_headerbar,

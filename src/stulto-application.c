@@ -66,7 +66,7 @@ static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num,
      */
 }
 
-static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
+static void parse_command_line_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
     GOptionEntry *entry;
     gboolean option;
 
@@ -247,7 +247,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     }
 
     stulto_terminal_config_parse(conf, file, filename);
-    parse_options(options, file, filename, error);
+    parse_command_line_options(options, file, filename, error);
 
     /* Create a window to hold the scrolling shell, and hook its
      * delete event to the quit function.. */

@@ -215,7 +215,7 @@ static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *pro
     vte_terminal_set_mouse_autohide(terminal, profile->mouse_autohide);
     vte_terminal_set_cursor_blink_mode(terminal, VTE_CURSOR_BLINK_OFF);
     vte_terminal_set_cursor_shape(terminal, VTE_CURSOR_SHAPE_BLOCK);
-    vte_terminal_set_bold_is_bright(terminal, TRUE);
+    vte_terminal_set_bold_is_bright(terminal, profile->bold_is_bright);
     if (profile->lines) {
         vte_terminal_set_scrollback_lines(terminal, profile->lines);
     }

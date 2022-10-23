@@ -25,6 +25,7 @@ static void parse_options(GKeyFile *file, const gchar *filename, StultoTerminalP
 
     profile->font = g_key_file_get_string(file, "options", "font", &error);
     profile->lines = g_key_file_get_integer(file, "options", "lines", &error);
+    profile->bold_is_bright = g_key_file_get_boolean(file, "options", "bold-is-bright", &error);
     profile->scroll_on_output = g_key_file_get_boolean(file, "options", "scroll-on-output", &error);
     profile->scroll_on_keystroke = g_key_file_get_boolean(file, "options", "scroll-on-keystroke", &error);
     profile->mouse_autohide = g_key_file_get_boolean(file, "options", "mouse-autohide", &error);

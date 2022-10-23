@@ -27,7 +27,7 @@
 #include "terminal-config.h"
 #include "stulto-terminal.h"
 #include "stulto-headerbar.h"
-#include "stulto-global-config.h"
+#include "stulto-app-config.h"
 
 static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -121,7 +121,7 @@ static void parse_command_line_options(GOptionEntry *options, GKeyFile *file, gc
 
 gboolean stulto_application_create(int argc, char *argv[]) {
     StultoTerminalConfig *conf = g_malloc(sizeof(StultoTerminalConfig));
-    StultoGlobalConfig *global_conf = g_malloc0(sizeof(StultoGlobalConfig));
+    StultoAppConfig *app_config = g_malloc0(sizeof(StultoAppConfig));
 
     // TODO - when we refactor to GtkApplication, most of these options will go away
     // Those that remain should live in the application type rather than tangled up with the config model
@@ -139,7 +139,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .long_name = "role",
                     .short_name = 'r',
                     .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &global_conf->role,
+                    .arg_data = &app_config->role,
                     .description = "Set window role",
                     .arg_description = "ROLE",
             },
@@ -148,7 +148,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     // (Assuming there hasn't yet been user uptake AND users don't voice strong opposition)
                     .long_name = "enable-headerbar",
                     .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &global_conf->enable_headerbar,
+                    .arg_data = &app_config->enable_headerbar,
                     .description = "Enable CSD-style headerbar",
             },
             {
@@ -206,7 +206,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
 
-    if (global_conf->enable_headerbar)
+    if (app_config->enable_headerbar)
     {
         GtkWidget *header_bar = stulto_headerbar_create();
         gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
@@ -219,9 +219,9 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     screen_changed(window, NULL, NULL);
     g_signal_connect(window, "screen-changed", G_CALLBACK(screen_changed), NULL);
 
-    if (global_conf->role) {
-        gtk_window_set_role(GTK_WINDOW(window), global_conf->role);
-        g_free(global_conf->role);
+    if (app_config->role) {
+        gtk_window_set_role(GTK_WINDOW(window), app_config->role);
+        g_free(app_config->role);
     }
 
     /* Create the terminal widget and add it to the window */

@@ -17,14 +17,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STULTO_GLOBAL_CONFIG_H
-#define STULTO_GLOBAL_CONFIG_H
+#ifndef STULTO_APP_CONFIG_H
+#define STULTO_APP_CONFIG_H
 
 #include <glib.h>
 
-typedef struct _StultoGlobalConfig {
+typedef struct _StultoAppConfig {
     gchar *role;
     gboolean enable_headerbar;
-} StultoGlobalConfig;
+} StultoAppConfig;
 
-#endif //STULTO_GLOBAL_CONFIG_H
+#endif //STULTO_APP_CONFIG_H

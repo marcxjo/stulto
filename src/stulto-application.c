@@ -24,7 +24,7 @@
 #include "stulto-application.h"
 
 #include "exit-status.h"
-#include "terminal-config.h"
+#include "stulto-terminal-profile.h"
 #include "stulto-terminal.h"
 #include "stulto-headerbar.h"
 #include "stulto-app-config.h"
@@ -51,7 +51,7 @@ static void delete_event(GtkWidget *window, GdkEvent *event, gpointer data) {
 }
 
 static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    StultoTerminalConfig *conf = data;
+    StultoTerminalProfile *conf = data;
 
     gchar *tab_label = g_strdup_printf("%d: %s", page_num, conf->command_argv[0]);
     gtk_notebook_set_tab_label(notebook, child, gtk_label_new(tab_label));
@@ -120,7 +120,7 @@ static void parse_command_line_options(GOptionEntry *options, GKeyFile *file, gc
 }
 
 gboolean stulto_application_create(int argc, char *argv[]) {
-    StultoTerminalConfig *conf = g_malloc(sizeof(StultoTerminalConfig));
+    StultoTerminalProfile *conf = g_malloc(sizeof(StultoTerminalProfile));
     StultoAppConfig *app_config = g_malloc0(sizeof(StultoAppConfig));
 
     // TODO - when we refactor to GtkApplication, most of these options will go away
@@ -198,7 +198,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
         return FALSE;
     }
 
-    stulto_terminal_config_parse(conf, file, filename);
+    stulto_terminal_profile_parse(conf, file, filename);
     parse_command_line_options(options, file, filename, error);
 
     /* Create a window to hold the scrolling shell, and hook its

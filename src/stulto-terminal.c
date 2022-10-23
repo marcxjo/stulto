@@ -212,7 +212,7 @@ static gboolean selection_changed(VteTerminal *terminal, gpointer data) {
     return TRUE;
 }
 
-static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalConfig *conf) {
+static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *conf) {
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 
@@ -242,7 +242,7 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalConfig
         g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed), NULL);
 }
 
-static void configure_terminal(VteTerminal *terminal, StultoTerminalConfig *conf) {
+static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *conf) {
     /* Set some defaults. */
     vte_terminal_set_scroll_on_output(terminal, conf->scroll_on_output);
     vte_terminal_set_scroll_on_keystroke(terminal, conf->scroll_on_keystroke);
@@ -279,7 +279,7 @@ static void configure_terminal(VteTerminal *terminal, StultoTerminalConfig *conf
     }
 }
 
-static void get_shell_and_title(VteTerminal *terminal, StultoTerminalConfig *conf) {
+static void get_shell_and_title(VteTerminal *terminal, StultoTerminalProfile *conf) {
     // TODO - eventually we want to split these out and configure the ability to customize the window title
     if (conf->command_argv == NULL || conf->command_argv[0] == NULL) {
         g_strfreev(conf->command_argv);
@@ -317,7 +317,7 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
     gtk_widget_realize(widget);
 }
 
-GtkWidget *stulto_terminal_create(StultoTerminalConfig *conf) {
+GtkWidget *stulto_terminal_create(StultoTerminalProfile *conf) {
     GtkWidget *terminal_widget = vte_terminal_new();
 
     VteTerminal *terminal = VTE_TERMINAL(terminal_widget);

@@ -17,9 +17,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "terminal-config.h"
+#include "stulto-terminal-profile.h"
 
-static void parse_options(GKeyFile *file, const gchar *filename, StultoTerminalConfig *conf)
+static void parse_options(GKeyFile *file, const gchar *filename, StultoTerminalProfile *conf)
 {
     GError *error = NULL;
 
@@ -78,7 +78,7 @@ static gboolean parse_color(GKeyFile *file, const gchar *filename, const gchar *
     return ret;
 }
 
-static void parse_colors(GKeyFile *file, const gchar *filename, StultoTerminalConfig *conf) {
+static void parse_colors(GKeyFile *file, const gchar *filename, StultoTerminalProfile *conf) {
     gchar name[8];
     unsigned int i;
 
@@ -102,7 +102,7 @@ static void parse_colors(GKeyFile *file, const gchar *filename, StultoTerminalCo
     }
 }
 
-static void parse_urlmatch(GKeyFile *file, const gchar *filename, StultoTerminalConfig *conf) {
+static void parse_urlmatch(GKeyFile *file, const gchar *filename, StultoTerminalProfile *conf) {
     GError *error = NULL;
     gchar *regex;
 
@@ -158,7 +158,7 @@ static void parse_urlmatch(GKeyFile *file, const gchar *filename, StultoTerminal
     g_free(regex);
 }
 
-static void parse_file(StultoTerminalConfig *conf, GKeyFile *file, gchar *filename) {
+static void parse_file(StultoTerminalProfile *conf, GKeyFile *file, gchar *filename) {
     if (g_key_file_has_group(file, "options")) {
         parse_options(file, filename, conf);
     }
@@ -170,6 +170,6 @@ static void parse_file(StultoTerminalConfig *conf, GKeyFile *file, gchar *filena
     }
 }
 
-void stulto_terminal_config_parse(StultoTerminalConfig *conf, GKeyFile *file, gchar *filename) {
+void stulto_terminal_profile_parse(StultoTerminalProfile *conf, GKeyFile *file, gchar *filename) {
     parse_file(conf, file, filename);
 }

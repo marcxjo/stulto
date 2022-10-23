@@ -21,20 +21,20 @@
 
 #include "exit-status.h"
 
-static void window_title_changed(GtkWidget *widget, gpointer data) {
+static void window_title_changed_cb(GtkWidget *widget, gpointer data) {
     /* TODO - we were previously passing in a pointer to the window to update its title
      * What we instead want to do is pick up the notify signal for the terminal's `window-title` property
      * At that point, we should also remove this now vestigial comeback
      */
 }
 
-static void handle_bell(GtkWidget *widget, gpointer data) {
+static void bell_cb(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
     gtk_window_set_urgency_hint(window, TRUE);
 }
 
-static int handle_focus_in(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static int focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     GtkWindow *window = data;
 
     gtk_window_set_urgency_hint(window, FALSE);
@@ -42,7 +42,7 @@ static int handle_focus_in(GtkWidget *widget, GdkEvent *event, gpointer data) {
     return FALSE;
 }
 
-static void child_exited(VteTerminal *widget, int status, gpointer data) {
+static void child_exited_cb(VteTerminal *widget, int status, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
     GtkWidget *notebook = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_NOTEBOOK);
 
@@ -58,7 +58,7 @@ static void child_exited(VteTerminal *widget, int status, gpointer data) {
     stulto_destroy_and_quit(window);
 }
 
-static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static gboolean button_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     gchar *program = data;
 
     char *match;
@@ -85,7 +85,7 @@ static gboolean button_press_event(GtkWidget *widget, GdkEvent *event, gpointer 
     return FALSE;
 }
 
-static void resize_window(GtkWidget *widget, guint width, guint height, gpointer data) {
+static void resize_window_cb(GtkWidget *widget, guint width, guint height, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     VteTerminal *terminal = VTE_TERMINAL(widget);
 
@@ -146,19 +146,19 @@ static void adjust_font_size(GtkWidget *widget, GtkWindow *window, gdouble facto
             rows * char_height + oheight);
 }
 
-static void increase_font_size(GtkWidget *widget, gpointer data) {
+static void increase_font_size_cb(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
     adjust_font_size(widget, window, 1.125);
 }
 
-static void decrease_font_size(GtkWidget *widget, gpointer data) {
+static void decrease_font_size_cb(GtkWidget *widget, gpointer data) {
     GtkWindow *window = data;
 
     adjust_font_size(widget, window, 1. / 1.125);
 }
 
-static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     GtkWidget *notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
 
@@ -169,10 +169,10 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
     if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
         switch (event->key.hardware_keycode) {
             case 21: /* + on US keyboards */
-                increase_font_size(widget, window);
+                increase_font_size_cb(widget, window);
                 return TRUE;
             case 20: /* - on US keyboards */
-                decrease_font_size(widget, window);
+                decrease_font_size_cb(widget, window);
                 return TRUE;
         }
         switch (gdk_keyval_to_lower(event->key.keyval)) {
@@ -204,7 +204,7 @@ static gboolean key_press_event(GtkWidget *widget, GdkEvent *event, gpointer dat
     return FALSE;
 }
 
-static gboolean selection_changed(VteTerminal *terminal, gpointer data) {
+static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
     if (vte_terminal_get_has_selection(terminal)) {
         vte_terminal_copy_clipboard_format(terminal, VTE_FORMAT_TEXT);
     }
@@ -212,90 +212,90 @@ static gboolean selection_changed(VteTerminal *terminal, gpointer data) {
     return TRUE;
 }
 
-static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalConfig *conf) {
+static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *profile) {
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 
     /* Connect to the "window-title-changed" signal to set the main window's title */
-    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), NULL);
+    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed_cb), NULL);
 
     /* Connect to the "button-press" event. */
-    if (conf->program)
-        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event), conf->program);
+    if (profile->program)
+        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event_cb), profile->program);
 
     /* Connect to application request signals. */
-    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window), window);
+    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window_cb), window);
 
     /* Connect to font tweakage */
-    g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size), window);
-    g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size), window);
-    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event), conf);
+    g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size_cb), window);
+    g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size_cb), window);
+    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event_cb), profile);
 
     /* Connect to bell signal */
-    if (conf->urgent_on_bell) {
-        g_signal_connect(widget, "bell", G_CALLBACK(handle_bell), window);
-        g_signal_connect(widget, "focus-in-event", G_CALLBACK(handle_focus_in), window);
+    if (profile->urgent_on_bell) {
+        g_signal_connect(widget, "bell", G_CALLBACK(bell_cb), window);
+        g_signal_connect(widget, "focus-in-event", G_CALLBACK(focus_in_event_cb), window);
     }
 
     /* Sync clipboard */
-    if (conf->sync_clipboard)
-        g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed), NULL);
+    if (profile->sync_clipboard)
+        g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed_cb), NULL);
 }
 
-static void configure_terminal(VteTerminal *terminal, StultoTerminalConfig *conf) {
+static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *profile) {
     /* Set some defaults. */
-    vte_terminal_set_scroll_on_output(terminal, conf->scroll_on_output);
-    vte_terminal_set_scroll_on_keystroke(terminal, conf->scroll_on_keystroke);
-    vte_terminal_set_mouse_autohide(terminal, conf->mouse_autohide);
+    vte_terminal_set_scroll_on_output(terminal, profile->scroll_on_output);
+    vte_terminal_set_scroll_on_keystroke(terminal, profile->scroll_on_keystroke);
+    vte_terminal_set_mouse_autohide(terminal, profile->mouse_autohide);
     vte_terminal_set_cursor_blink_mode(terminal, VTE_CURSOR_BLINK_OFF);
     vte_terminal_set_cursor_shape(terminal, VTE_CURSOR_SHAPE_BLOCK);
     vte_terminal_set_bold_is_bright(terminal, TRUE);
-    if (conf->lines) {
-        vte_terminal_set_scrollback_lines(terminal, conf->lines);
+    if (profile->lines) {
+        vte_terminal_set_scrollback_lines(terminal, profile->lines);
     }
-    if (conf->palette_size) {
-        vte_terminal_set_colors(terminal, &conf->foreground, &conf->background, conf->palette, conf->palette_size - 2);
+    if (profile->palette_size) {
+        vte_terminal_set_colors(terminal, &profile->foreground, &profile->background, profile->palette, profile->palette_size - 2);
     }
-    if (conf->highlight.alpha) {
-        vte_terminal_set_color_highlight(terminal, &conf->highlight);
+    if (profile->highlight.alpha) {
+        vte_terminal_set_color_highlight(terminal, &profile->highlight);
     }
-    if (conf->highlight_fg.alpha) {
-        vte_terminal_set_color_highlight_foreground(terminal, &conf->highlight_fg);
+    if (profile->highlight_fg.alpha) {
+        vte_terminal_set_color_highlight_foreground(terminal, &profile->highlight_fg);
     }
-    if (conf->font) {
-        PangoFontDescription *desc = pango_font_description_from_string(conf->font);
+    if (profile->font) {
+        PangoFontDescription *desc = pango_font_description_from_string(profile->font);
 
         vte_terminal_set_font(terminal, desc);
         pango_font_description_free(desc);
     }
-    if (conf->regex) {
+    if (profile->regex) {
 #ifdef VTE_TYPE_REGEX
-        int id = vte_terminal_match_add_regex(terminal, conf->regex, 0);
+        int id = vte_terminal_match_add_regex(terminal, profile->regex, 0);
 #else
-        int id = vte_terminal_match_add_gregex(terminal, conf->regex, 0);
-        g_regex_unref(conf->regex);
+        int id = vte_terminal_match_add_gregex(terminal, profile->regex, 0);
+        g_regex_unref(profile->regex);
 #endif
         vte_terminal_match_set_cursor_name(terminal, id, "pointer");
     }
 }
 
-static void get_shell_and_title(VteTerminal *terminal, StultoTerminalConfig *conf) {
+static void get_shell_and_title(VteTerminal *terminal, StultoTerminalProfile *profile) {
     // TODO - eventually we want to split these out and configure the ability to customize the window title
-    if (conf->command_argv == NULL || conf->command_argv[0] == NULL) {
-        g_strfreev(conf->command_argv);
-        conf->command_argv = g_malloc(2 * sizeof(gchar *));
-        conf->command_argv[0] = vte_get_user_shell();
-        conf->command_argv[1] = NULL;
+    if (profile->command_argv == NULL || profile->command_argv[0] == NULL) {
+        g_strfreev(profile->command_argv);
+        profile->command_argv = g_malloc(2 * sizeof(gchar *));
+        profile->command_argv[0] = vte_get_user_shell();
+        profile->command_argv[1] = NULL;
 
-        if (conf->command_argv[0] == NULL || conf->command_argv[0][0] == '\0') {
+        if (profile->command_argv[0] == NULL || profile->command_argv[0][0] == '\0') {
             const gchar *shell = g_getenv("SHELL");
 
             if (shell == NULL || shell[0] == '\0') {
                 shell = "/bin/sh";
             }
 
-            g_free(conf->command_argv[0]);
-            conf->command_argv[0] = g_strdup(shell);
+            g_free(profile->command_argv[0]);
+            profile->command_argv[0] = g_strdup(shell);
         }
     }
 }
@@ -312,25 +312,25 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
         return;
     }
 
-    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited), NULL);
+    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited_cb), NULL);
 
     gtk_widget_realize(widget);
 }
 
-GtkWidget *stulto_terminal_create(StultoTerminalConfig *conf) {
+GtkWidget *stulto_terminal_create(StultoTerminalProfile *profile) {
     GtkWidget *terminal_widget = vte_terminal_new();
 
     VteTerminal *terminal = VTE_TERMINAL(terminal_widget);
 
-    connect_terminal_signals(terminal, conf);
-    configure_terminal(terminal, conf);
-    get_shell_and_title(terminal, conf);
+    connect_terminal_signals(terminal, profile);
+    configure_terminal(terminal, profile);
+    get_shell_and_title(terminal, profile);
 
     vte_terminal_spawn_async(
             terminal,
             VTE_PTY_DEFAULT,
             NULL,
-            conf->command_argv,
+            profile->command_argv,
             NULL,
             G_SPAWN_SEARCH_PATH,
             NULL,

@@ -17,8 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef TERMINAL_CONFIG_H
-#define TERMINAL_CONFIG_H
+#ifndef STULTO_TERMINAL_PROFILE_H
+#define STULTO_TERMINAL_PROFILE_H
 
 #include <vte-2.91/vte/vte.h>
 
@@ -29,7 +29,7 @@
 
 #endif
 
-typedef struct _StultoTerminalConfig {
+typedef struct _StultoTerminalProfile {
     gchar *config_file;
     gchar *font;
     gint lines;
@@ -51,8 +51,8 @@ typedef struct _StultoTerminalConfig {
     GdkRGBA highlight_fg;
     GdkRGBA palette[16];
     gsize palette_size;
-} StultoTerminalConfig;
+} StultoTerminalProfile;
 
-void stulto_terminal_config_parse(StultoTerminalConfig *conf, GKeyFile *file, gchar *filename);
+void stulto_terminal_profile_parse(StultoTerminalProfile *profile, GKeyFile *file, gchar *filename);
 
-#endif //TERMINAL_CONFIG_H
+#endif //STULTO_TERMINAL_PROFILE_H

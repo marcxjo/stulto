@@ -24,6 +24,6 @@
 
 #include "stulto-terminal-profile.h"
 
-GtkWidget *stulto_terminal_create(StultoTerminalProfile *conf);
+GtkWidget *stulto_terminal_create(StultoTerminalProfile *profile);
 
 #endif //STULTO_TERMINAL_H

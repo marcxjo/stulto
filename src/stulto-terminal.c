@@ -212,7 +212,7 @@ static gboolean selection_changed(VteTerminal *terminal, gpointer data) {
     return TRUE;
 }
 
-static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *conf) {
+static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *profile) {
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 
@@ -220,8 +220,8 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfil
     g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed), NULL);
 
     /* Connect to the "button-press" event. */
-    if (conf->program)
-        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event), conf->program);
+    if (profile->program)
+        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event), profile->program);
 
     /* Connect to application request signals. */
     g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window), window);
@@ -229,73 +229,73 @@ static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfil
     /* Connect to font tweakage */
     g_signal_connect(widget, "increase-font-size", G_CALLBACK(increase_font_size), window);
     g_signal_connect(widget, "decrease-font-size", G_CALLBACK(decrease_font_size), window);
-    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event), conf);
+    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event), profile);
 
     /* Connect to bell signal */
-    if (conf->urgent_on_bell) {
+    if (profile->urgent_on_bell) {
         g_signal_connect(widget, "bell", G_CALLBACK(handle_bell), window);
         g_signal_connect(widget, "focus-in-event", G_CALLBACK(handle_focus_in), window);
     }
 
     /* Sync clipboard */
-    if (conf->sync_clipboard)
+    if (profile->sync_clipboard)
         g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed), NULL);
 }
 
-static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *conf) {
+static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *profile) {
     /* Set some defaults. */
-    vte_terminal_set_scroll_on_output(terminal, conf->scroll_on_output);
-    vte_terminal_set_scroll_on_keystroke(terminal, conf->scroll_on_keystroke);
-    vte_terminal_set_mouse_autohide(terminal, conf->mouse_autohide);
+    vte_terminal_set_scroll_on_output(terminal, profile->scroll_on_output);
+    vte_terminal_set_scroll_on_keystroke(terminal, profile->scroll_on_keystroke);
+    vte_terminal_set_mouse_autohide(terminal, profile->mouse_autohide);
     vte_terminal_set_cursor_blink_mode(terminal, VTE_CURSOR_BLINK_OFF);
     vte_terminal_set_cursor_shape(terminal, VTE_CURSOR_SHAPE_BLOCK);
     vte_terminal_set_bold_is_bright(terminal, TRUE);
-    if (conf->lines) {
-        vte_terminal_set_scrollback_lines(terminal, conf->lines);
+    if (profile->lines) {
+        vte_terminal_set_scrollback_lines(terminal, profile->lines);
     }
-    if (conf->palette_size) {
-        vte_terminal_set_colors(terminal, &conf->foreground, &conf->background, conf->palette, conf->palette_size - 2);
+    if (profile->palette_size) {
+        vte_terminal_set_colors(terminal, &profile->foreground, &profile->background, profile->palette, profile->palette_size - 2);
     }
-    if (conf->highlight.alpha) {
-        vte_terminal_set_color_highlight(terminal, &conf->highlight);
+    if (profile->highlight.alpha) {
+        vte_terminal_set_color_highlight(terminal, &profile->highlight);
     }
-    if (conf->highlight_fg.alpha) {
-        vte_terminal_set_color_highlight_foreground(terminal, &conf->highlight_fg);
+    if (profile->highlight_fg.alpha) {
+        vte_terminal_set_color_highlight_foreground(terminal, &profile->highlight_fg);
     }
-    if (conf->font) {
-        PangoFontDescription *desc = pango_font_description_from_string(conf->font);
+    if (profile->font) {
+        PangoFontDescription *desc = pango_font_description_from_string(profile->font);
 
         vte_terminal_set_font(terminal, desc);
         pango_font_description_free(desc);
     }
-    if (conf->regex) {
+    if (profile->regex) {
 #ifdef VTE_TYPE_REGEX
-        int id = vte_terminal_match_add_regex(terminal, conf->regex, 0);
+        int id = vte_terminal_match_add_regex(terminal, profile->regex, 0);
 #else
-        int id = vte_terminal_match_add_gregex(terminal, conf->regex, 0);
-        g_regex_unref(conf->regex);
+        int id = vte_terminal_match_add_gregex(terminal, profile->regex, 0);
+        g_regex_unref(profile->regex);
 #endif
         vte_terminal_match_set_cursor_name(terminal, id, "pointer");
     }
 }
 
-static void get_shell_and_title(VteTerminal *terminal, StultoTerminalProfile *conf) {
+static void get_shell_and_title(VteTerminal *terminal, StultoTerminalProfile *profile) {
     // TODO - eventually we want to split these out and configure the ability to customize the window title
-    if (conf->command_argv == NULL || conf->command_argv[0] == NULL) {
-        g_strfreev(conf->command_argv);
-        conf->command_argv = g_malloc(2 * sizeof(gchar *));
-        conf->command_argv[0] = vte_get_user_shell();
-        conf->command_argv[1] = NULL;
+    if (profile->command_argv == NULL || profile->command_argv[0] == NULL) {
+        g_strfreev(profile->command_argv);
+        profile->command_argv = g_malloc(2 * sizeof(gchar *));
+        profile->command_argv[0] = vte_get_user_shell();
+        profile->command_argv[1] = NULL;
 
-        if (conf->command_argv[0] == NULL || conf->command_argv[0][0] == '\0') {
+        if (profile->command_argv[0] == NULL || profile->command_argv[0][0] == '\0') {
             const gchar *shell = g_getenv("SHELL");
 
             if (shell == NULL || shell[0] == '\0') {
                 shell = "/bin/sh";
             }
 
-            g_free(conf->command_argv[0]);
-            conf->command_argv[0] = g_strdup(shell);
+            g_free(profile->command_argv[0]);
+            profile->command_argv[0] = g_strdup(shell);
         }
     }
 }
@@ -317,20 +317,20 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
     gtk_widget_realize(widget);
 }
 
-GtkWidget *stulto_terminal_create(StultoTerminalProfile *conf) {
+GtkWidget *stulto_terminal_create(StultoTerminalProfile *profile) {
     GtkWidget *terminal_widget = vte_terminal_new();
 
     VteTerminal *terminal = VTE_TERMINAL(terminal_widget);
 
-    connect_terminal_signals(terminal, conf);
-    configure_terminal(terminal, conf);
-    get_shell_and_title(terminal, conf);
+    connect_terminal_signals(terminal, profile);
+    configure_terminal(terminal, profile);
+    get_shell_and_title(terminal, profile);
 
     vte_terminal_spawn_async(
             terminal,
             VTE_PTY_DEFAULT,
             NULL,
-            conf->command_argv,
+            profile->command_argv,
             NULL,
             G_SPAWN_SEARCH_PATH,
             NULL,

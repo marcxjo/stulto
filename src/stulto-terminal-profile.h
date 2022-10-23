@@ -53,6 +53,6 @@ typedef struct _StultoTerminalProfile {
     gsize palette_size;
 } StultoTerminalProfile;
 
-void stulto_terminal_profile_parse(StultoTerminalProfile *conf, GKeyFile *file, gchar *filename);
+void stulto_terminal_profile_parse(StultoTerminalProfile *profile, GKeyFile *file, gchar *filename);
 
 #endif //STULTO_TERMINAL_PROFILE_H

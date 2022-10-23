@@ -51,9 +51,9 @@ static void delete_event(GtkWidget *window, GdkEvent *event, gpointer data) {
 }
 
 static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    StultoTerminalProfile *conf = data;
+    StultoTerminalProfile *profile = data;
 
-    gchar *tab_label = g_strdup_printf("%d: %s", page_num, conf->command_argv[0]);
+    gchar *tab_label = g_strdup_printf("%d: %s", page_num, profile->command_argv[0]);
     gtk_notebook_set_tab_label(notebook, child, gtk_label_new(tab_label));
     g_free(tab_label);
 
@@ -120,8 +120,8 @@ static void parse_command_line_options(GOptionEntry *options, GKeyFile *file, gc
 }
 
 gboolean stulto_application_create(int argc, char *argv[]) {
-    StultoTerminalProfile *conf = g_malloc(sizeof(StultoTerminalProfile));
-    StultoAppConfig *app_config = g_malloc0(sizeof(StultoAppConfig));
+    StultoTerminalProfile *profile = g_malloc(sizeof(StultoTerminalProfile));
+    StultoAppConfig *config = g_malloc0(sizeof(StultoAppConfig));
 
     // TODO - when we refactor to GtkApplication, most of these options will go away
     // Those that remain should live in the application type rather than tangled up with the config model
@@ -131,7 +131,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .long_name = "config",
                     .short_name = 'c',
                     .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &conf->config_file,
+                    .arg_data = &profile->config_file,
                     .description = "Specify alternative config file",
                     .arg_description = "FILE",
             },
@@ -139,7 +139,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .long_name = "role",
                     .short_name = 'r',
                     .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &app_config->role,
+                    .arg_data = &config->role,
                     .description = "Set window role",
                     .arg_description = "ROLE",
             },
@@ -148,13 +148,13 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     // (Assuming there hasn't yet been user uptake AND users don't voice strong opposition)
                     .long_name = "enable-headerbar",
                     .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &app_config->enable_headerbar,
+                    .arg_data = &config->enable_headerbar,
                     .description = "Enable CSD-style headerbar",
             },
             {
                     .long_name = G_OPTION_REMAINING,
                     .arg = G_OPTION_ARG_STRING_ARRAY,
-                    .arg_data = &conf->command_argv,
+                    .arg_data = &profile->command_argv,
             },
             {} /* terminator */
     };
@@ -172,8 +172,8 @@ gboolean stulto_application_create(int argc, char *argv[]) {
         return FALSE;
     }
 
-    gchar *filename = conf->config_file
-            ? conf->config_file
+    gchar *filename = profile->config_file
+            ? profile->config_file
             : g_build_filename(
             g_get_user_config_dir(),
             "stulto",
@@ -198,7 +198,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
         return FALSE;
     }
 
-    stulto_terminal_profile_parse(conf, file, filename);
+    stulto_terminal_profile_parse(profile, file, filename);
     parse_command_line_options(options, file, filename, error);
 
     /* Create a window to hold the scrolling shell, and hook its
@@ -206,7 +206,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
 
-    if (app_config->enable_headerbar)
+    if (config->enable_headerbar)
     {
         GtkWidget *header_bar = stulto_headerbar_create();
         gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
@@ -219,9 +219,9 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     screen_changed(window, NULL, NULL);
     g_signal_connect(window, "screen-changed", G_CALLBACK(screen_changed), NULL);
 
-    if (app_config->role) {
-        gtk_window_set_role(GTK_WINDOW(window), app_config->role);
-        g_free(app_config->role);
+    if (config->role) {
+        gtk_window_set_role(GTK_WINDOW(window), config->role);
+        g_free(config->role);
     }
 
     /* Create the terminal widget and add it to the window */
@@ -230,11 +230,11 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
-    g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), conf);
+    g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), profile);
     g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
-    GtkWidget *term = stulto_terminal_create(conf);
+    GtkWidget *term = stulto_terminal_create(profile);
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), term, NULL);
 

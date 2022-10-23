@@ -19,6 +19,35 @@
 
 #include "terminal-config.h"
 
+static void parse_options(GKeyFile *file, const gchar *filename, StultoTerminalConfig *conf)
+{
+    GError *error = NULL;
+
+    conf->font = g_key_file_get_string(file, "options", "font", &error);
+    conf->lines = g_key_file_get_integer(file, "options", "lines", &error);
+    conf->scroll_on_output = g_key_file_get_boolean(file, "options", "scroll-on-output", &error);
+    conf->scroll_on_keystroke = g_key_file_get_boolean(file, "options", "scroll-on-keystroke", &error);
+    conf->mouse_autohide = g_key_file_get_boolean(file, "options", "mouse-autohide", &error);
+    conf->sync_clipboard = g_key_file_get_boolean(file, "options", "sync-clipboard", &error);
+    conf->urgent_on_bell = g_key_file_get_boolean(file, "options", "urgent-on-bell", &error);
+
+    if (error)
+    {
+        switch (error->code)
+        {
+            case G_KEY_FILE_ERROR_GROUP_NOT_FOUND:
+            case G_KEY_FILE_ERROR_KEY_NOT_FOUND:
+                break;
+            default:
+                g_printerr(
+                        "Error parsing '%s': %s\n", filename, error->message
+                );
+        }
+        g_error_free(error);
+        error = NULL;
+    }
+}
+
 static gboolean parse_color(GKeyFile *file, const gchar *filename, const gchar *key, gboolean required, GdkRGBA *out) {
     GError *error = NULL;
     gchar *color = g_key_file_get_string(file, "colors", key, &error);
@@ -130,6 +159,9 @@ static void parse_urlmatch(GKeyFile *file, const gchar *filename, StultoTerminal
 }
 
 static void parse_file(StultoTerminalConfig *conf, GKeyFile *file, gchar *filename) {
+    if (g_key_file_has_group(file, "options")) {
+        parse_options(file, filename, conf);
+    }
     if (g_key_file_has_group(file, "colors")) {
         parse_colors(file, filename, conf);
     }

@@ -33,14 +33,11 @@ typedef struct _StultoTerminalConfig {
     gchar *config_file;
     gchar *font;
     gint lines;
-    gchar *role;
-    gboolean nodecorations;
     gboolean scroll_on_output;
     gboolean scroll_on_keystroke;
     gboolean mouse_autohide;
     gboolean sync_clipboard;
     gboolean urgent_on_bell;
-    gboolean enable_headerbar;
     gchar **command_argv;
 #ifdef VTE_TYPE_REGEX
     VteRegex *regex;

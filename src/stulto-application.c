@@ -27,6 +27,7 @@
 #include "terminal-config.h"
 #include "stulto-terminal.h"
 #include "stulto-headerbar.h"
+#include "stulto-app-config.h"
 
 static void screen_changed(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -60,37 +61,13 @@ static void page_added(GtkNotebook *notebook, GtkWidget *child, guint page_num, 
 }
 
 static void switch_page(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    gboolean *enable_headerbar = data;
     gtk_widget_show(child);
-
-    gint num_tabs = gtk_notebook_get_n_pages(notebook);
-    gint cur_tab = gtk_notebook_page_num(notebook, child);
-
-    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
-
-    gchar *new_title;
-
-    if (*enable_headerbar)
-    {
-        new_title = g_strdup_printf("Stulto: %s", vte_terminal_get_window_title(VTE_TERMINAL(child)));
-
-        // Not currently used, but we'll eventually plug it in to update the headerbar's session indicator
-        // gchar *new_session_state = g_strdup_printf("%d/%d", cur_tab + 1, num_tabs);
-        // TODO - update session state indicator
-        // g_free(new_session_state);
-    } else {
-        new_title = g_strdup_printf(
-                "[%d/%d] %s",
-                cur_tab + 1,
-                num_tabs,
-                vte_terminal_get_window_title(VTE_TERMINAL(child)));
-    }
-
-    gtk_window_set_title(GTK_WINDOW(window), new_title);
-    g_free(new_title);
+    /* TODO - we were previously passing in a pointer to the window to update its title
+     * What we instead want to do is pick up the notify signal for the notebook's `page` property
+     */
 }
 
-static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
+static void parse_command_line_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
     GOptionEntry *entry;
     gboolean option;
 
@@ -144,6 +121,7 @@ static void parse_options(GOptionEntry *options, GKeyFile *file, gchar *filename
 
 gboolean stulto_application_create(int argc, char *argv[]) {
     StultoTerminalConfig *conf = g_malloc(sizeof(StultoTerminalConfig));
+    StultoAppConfig *app_config = g_malloc0(sizeof(StultoAppConfig));
 
     // TODO - when we refactor to GtkApplication, most of these options will go away
     // Those that remain should live in the application type rather than tangled up with the config model
@@ -158,69 +136,19 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .arg_description = "FILE",
             },
             {
-                    .long_name = "font",
-                    .short_name = 'f',
-                    .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &conf->font,
-                    .description = "Specify a font to use",
-                    .arg_description = "FONT",
-            },
-            {
-                    .long_name = "lines",
-                    .short_name = 'n',
-                    .arg = G_OPTION_ARG_INT,
-                    .arg_data = &conf->lines,
-                    .description = "Specify the number of scrollback lines",
-                    .arg_description = "LINES",
-            },
-            {
                     .long_name = "role",
                     .short_name = 'r',
                     .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &conf->role,
+                    .arg_data = &app_config->role,
                     .description = "Set window role",
                     .arg_description = "ROLE",
             },
             {
-                    .long_name = "no-decorations",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->nodecorations,
-                    .description = "Disable window decorations",
-            },
-            {
-                    .long_name = "scroll-on-output",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->scroll_on_output,
-                    .description = "Toggle scroll on output",
-            },
-            {
-                    .long_name = "scroll-on-keystroke",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->scroll_on_keystroke,
-                    .description = "Toggle scroll on keystroke",
-            },
-            {
-                    .long_name = "mouse-autohide",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->mouse_autohide,
-                    .description = "Toggle autohiding the mouse cursor",
-            },
-            {
-                    .long_name = "sync-clipboard",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->sync_clipboard,
-                    .description = "Update both primary and clipboard on selection",
-            },
-            {
-                    .long_name = "urgent-on-bell",
-                    .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->urgent_on_bell,
-                    .description = "Set window urgency hint on bell",
-            },
-            {
+                    // TODO - this will become opt-out once the headerbar design is fully implemented
+                    // (Assuming there hasn't yet been user uptake AND users don't voice strong opposition)
                     .long_name = "enable-headerbar",
                     .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &conf->enable_headerbar,
+                    .arg_data = &app_config->enable_headerbar,
                     .description = "Enable CSD-style headerbar",
             },
             {
@@ -271,14 +199,14 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     }
 
     stulto_terminal_config_parse(conf, file, filename);
-    parse_options(options, file, filename, error);
+    parse_command_line_options(options, file, filename, error);
 
     /* Create a window to hold the scrolling shell, and hook its
      * delete event to the quit function.. */
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(window, "delete-event", G_CALLBACK(delete_event), NULL);
 
-    if (conf->enable_headerbar)
+    if (app_config->enable_headerbar)
     {
         GtkWidget *header_bar = stulto_headerbar_create();
         gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
@@ -291,13 +219,9 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     screen_changed(window, NULL, NULL);
     g_signal_connect(window, "screen-changed", G_CALLBACK(screen_changed), NULL);
 
-    if (conf->role) {
-        gtk_window_set_role(GTK_WINDOW(window), conf->role);
-        g_free(conf->role);
-    }
-
-    if (conf->nodecorations) {
-        gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+    if (app_config->role) {
+        gtk_window_set_role(GTK_WINDOW(window), app_config->role);
+        g_free(app_config->role);
     }
 
     /* Create the terminal widget and add it to the window */
@@ -307,7 +231,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
     g_signal_connect(notebook, "page-added", G_CALLBACK(page_added), conf);
-    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), &conf->enable_headerbar);
+    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page), NULL);
 
     // For whatever odd reason, the first terminal created, doesn't capture focus automatically
     GtkWidget *term = stulto_terminal_create(conf);

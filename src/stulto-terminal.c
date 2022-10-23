@@ -43,8 +43,8 @@ static int focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) 
 }
 
 static void child_exited_cb(VteTerminal *widget, int status, gpointer data) {
-    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
     GtkWidget *notebook = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_NOTEBOOK);
+    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
 
     gint numPages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
     gint currentPage = gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
@@ -159,7 +159,6 @@ static void decrease_font_size_cb(GtkWidget *widget, gpointer data) {
 }
 
 static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     GtkWidget *notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
 
     GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();

@@ -33,6 +33,7 @@ typedef struct _StultoTerminalProfile {
     gchar *config_file;
     gchar *font;
     gint lines;
+    gboolean bold_is_bright;
     gboolean scroll_on_output;
     gboolean scroll_on_keystroke;
     gboolean mouse_autohide;

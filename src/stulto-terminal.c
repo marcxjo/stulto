@@ -182,6 +182,9 @@ static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
 }
 
 static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *profile) {
+    // TODO - we're passing a window reference into callbacks before we even have an ancestor window
+    // We should either store a reference to the window, handle these signals _in_ the window object,
+    // or bubble them up via g_object_notify
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 
@@ -215,7 +218,7 @@ static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *pro
     vte_terminal_set_mouse_autohide(terminal, profile->mouse_autohide);
     vte_terminal_set_cursor_blink_mode(terminal, VTE_CURSOR_BLINK_OFF);
     vte_terminal_set_cursor_shape(terminal, VTE_CURSOR_SHAPE_BLOCK);
-    vte_terminal_set_bold_is_bright(terminal, TRUE);
+    vte_terminal_set_bold_is_bright(terminal, profile->bold_is_bright);
     if (profile->lines) {
         vte_terminal_set_scrollback_lines(terminal, profile->lines);
     }

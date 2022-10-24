@@ -182,6 +182,9 @@ static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
 }
 
 static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *profile) {
+    // TODO - we're passing a window reference into callbacks before we even have an ancestor window
+    // We should either store a reference to the window, handle these signals _in_ the window object,
+    // or bubble them up via g_object_notify
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
 

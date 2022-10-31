@@ -23,7 +23,24 @@
 #include <gtk/gtk.h>
 
 #include "stulto-terminal-profile.h"
+#include "stulto-exec-data.h"
 
-GtkWidget *stulto_terminal_create(StultoTerminalProfile *profile);
+G_BEGIN_DECLS
+
+#define STULTO_TYPE_TERMINAL stulto_terminal_get_type()
+G_DECLARE_FINAL_TYPE(StultoTerminal, stulto_terminal, STULTO, TERMINAL, GtkBin)
+
+StultoTerminal *stulto_terminal_new(StultoTerminalProfile *profile, StultoExecData *exec_data);
+
+const char *stulto_terminal_get_title(StultoTerminal *terminal);
+void stulto_terminal_set_title(StultoTerminal *terminal, const char *title);
+
+void stulto_terminal_increase_font_size(StultoTerminal *terminal);
+void stulto_terminal_decrease_font_size(StultoTerminal *terminal);
+
+void stulto_terminal_copy_clipboard_format(StultoTerminal *terminal, VteFormat format);
+void stulto_terminal_paste_clipboard(StultoTerminal *terminal);
+
+G_END_DECLS
 
 #endif //STULTO_TERMINAL_H

@@ -39,7 +39,6 @@ typedef struct _StultoTerminalProfile {
     gboolean mouse_autohide;
     gboolean sync_clipboard;
     gboolean urgent_on_bell;
-    gchar **command_argv;
 #ifdef VTE_TYPE_REGEX
     VteRegex *regex;
 #else
@@ -54,6 +53,6 @@ typedef struct _StultoTerminalProfile {
     gsize palette_size;
 } StultoTerminalProfile;
 
-void stulto_terminal_profile_parse(StultoTerminalProfile *profile, GKeyFile *file, gchar *filename);
+StultoTerminalProfile *stulto_terminal_profile_parse(gchar *filename);
 
 #endif //STULTO_TERMINAL_PROFILE_H

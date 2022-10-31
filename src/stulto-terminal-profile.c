@@ -19,6 +19,8 @@
 
 #include "stulto-terminal-profile.h"
 
+#define STULTO_DEFAULT_PROFILE "stulto.ini"
+
 static void parse_options(GKeyFile *file, const gchar *filename, StultoTerminalProfile *profile)
 {
     GError *error = NULL;
@@ -171,6 +173,29 @@ static void parse_file(StultoTerminalProfile *profile, GKeyFile *file, gchar *fi
     }
 }
 
-void stulto_terminal_profile_parse(StultoTerminalProfile *profile, GKeyFile *file, gchar *filename) {
+StultoTerminalProfile *stulto_terminal_profile_parse(gchar *filename) {
+    StultoTerminalProfile *profile = g_malloc0(sizeof(StultoTerminalProfile));
+
+    if (filename == NULL || filename[0] == '\0')
+    {
+        filename = profile->config_file
+                 ? profile->config_file
+                 : g_build_filename(g_get_user_config_dir(), "stulto", STULTO_DEFAULT_PROFILE, NULL);
+    }
+
+    GError *error = NULL;
+    GKeyFile *file = g_key_file_new();
+    g_key_file_load_from_file(file, filename, G_KEY_FILE_NONE, &error);
+
+    if (error) {
+        g_printerr("Unable to load config file '%s': %s\n", filename, error->message);
+        g_error_free(error);
+    }
+
     parse_file(profile, file, filename);
+
+    profile->config_file = filename;
+    g_key_file_free(file);
+
+    return profile;
 }

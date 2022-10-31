@@ -17,19 +17,24 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STULTO_APP_CONFIG_H
-#define STULTO_APP_CONFIG_H
+#ifndef STULTO_SESSION_MANAGER_H
+#define STULTO_SESSION_MANAGER_H
 
-#include <glib.h>
+#include <gtk/gtk.h>
 
-#include "stulto-terminal-profile.h"
+#include "stulto-terminal.h"
 
-typedef struct _StultoAppConfig {
-    gchar *role;
-    gchar *initial_profile_path; // For this instance of the app
-    // TODO - this is a little dirty - makes a decent case to migrate to GSettings
-    StultoTerminalProfile *initial_profile;
-    gboolean enable_headerbar;
-} StultoAppConfig;
+G_BEGIN_DECLS
 
-#endif //STULTO_APP_CONFIG_H
+#define STULTO_TYPE_SESSION_MANAGER stulto_session_manager_get_type()
+G_DECLARE_FINAL_TYPE(StultoSessionManager, stulto_session_manager, STULTO, SESSION_MANAGER, GtkNotebook)
+
+StultoSessionManager *stulto_session_manager_new();
+void stulto_session_manager_add_terminal(StultoSessionManager *session_manager, StultoTerminal *terminal);
+
+void stulto_session_manager_prev_session(StultoSessionManager *session_manager);
+void stulto_session_manager_next_session(StultoSessionManager *session_manager);
+
+G_END_DECLS
+
+#endif //STULTO_SESSION_MANAGER_H

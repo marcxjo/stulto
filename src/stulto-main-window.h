@@ -17,19 +17,22 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STULTO_APP_CONFIG_H
-#define STULTO_APP_CONFIG_H
+#ifndef STULTO_MAIN_WINDOW_H
+#define STULTO_MAIN_WINDOW_H
 
-#include <glib.h>
+#include <gtk/gtk.h>
 
-#include "stulto-terminal-profile.h"
+#include "stulto-terminal.h"
+#include "stulto-app-config.h"
 
-typedef struct _StultoAppConfig {
-    gchar *role;
-    gchar *initial_profile_path; // For this instance of the app
-    // TODO - this is a little dirty - makes a decent case to migrate to GSettings
-    StultoTerminalProfile *initial_profile;
-    gboolean enable_headerbar;
-} StultoAppConfig;
+G_BEGIN_DECLS
 
-#endif //STULTO_APP_CONFIG_H
+#define STULTO_TYPE_MAIN_WINDOW stulto_main_window_get_type()
+G_DECLARE_FINAL_TYPE(StultoMainWindow, stulto_main_window, STULTO, MAIN_WINDOW, GtkWindow)
+
+StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConfig *config);
+void *stulto_main_window_add_terminal();
+
+G_END_DECLS
+
+#endif //STULTO_MAIN_WINDOW_H

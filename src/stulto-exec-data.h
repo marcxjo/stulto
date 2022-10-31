@@ -17,19 +17,17 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STULTO_APP_CONFIG_H
-#define STULTO_APP_CONFIG_H
+#ifndef STULTO_EXEC_DATA_H
+#define STULTO_EXEC_DATA_H
 
 #include <glib.h>
 
-#include "stulto-terminal-profile.h"
+typedef struct _StultoExecData {
+    gchar **command_argv;
+} StultoExecData;
 
-typedef struct _StultoAppConfig {
-    gchar *role;
-    gchar *initial_profile_path; // For this instance of the app
-    // TODO - this is a little dirty - makes a decent case to migrate to GSettings
-    StultoTerminalProfile *initial_profile;
-    gboolean enable_headerbar;
-} StultoAppConfig;
+StultoExecData *stulto_exec_data_default();
 
-#endif //STULTO_APP_CONFIG_H
+StultoExecData *stulto_exec_data_create(gchar **cmd_argv);
+
+#endif //STULTO_EXEC_DATA_H

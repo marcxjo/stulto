@@ -22,8 +22,13 @@
 
 #include <glib.h>
 
+#include "stulto-terminal-profile.h"
+
 typedef struct _StultoAppConfig {
     gchar *role;
+    gchar *initial_profile_path; // For this instance of the app
+    // TODO - this is a little dirty - makes a decent case to migrate to GSettings
+    StultoTerminalProfile *initial_profile;
     gboolean enable_headerbar;
 } StultoAppConfig;
 

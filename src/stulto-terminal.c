@@ -55,7 +55,7 @@ void stulto_terminal_set_title(StultoTerminal *terminal, const char *title);
 
 // region Signal Callbacks
 
-static void window_title_changed_cb(VteTerminal *vte, gpointer data) {
+static void vte_window_title_changed_cb(VteTerminal *vte, gpointer data) {
     // TODO - hoist this so that we can add session index and update the app window title
     GtkWidget *parent = gtk_widget_get_ancestor(GTK_WIDGET(vte), STULTO_TYPE_TERMINAL);
 
@@ -64,13 +64,13 @@ static void window_title_changed_cb(VteTerminal *vte, gpointer data) {
     stulto_terminal_set_title(terminal, vte_terminal_get_window_title(vte));
 }
 
-static void bell_cb(GtkWidget *widget, gpointer data) {
+static void vte_bell_cb(GtkWidget *widget, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
 
     gtk_window_set_urgency_hint(GTK_WINDOW(window), TRUE);
 }
 
-static int focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static int vte_focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
 
     gtk_window_set_urgency_hint(GTK_WINDOW(window), FALSE);
@@ -78,7 +78,7 @@ static int focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) 
     return FALSE;
 }
 
-static void child_exited_cb(VteTerminal *widget, int status, gpointer data) {
+static void vte_child_exited_cb(VteTerminal *widget, int status, gpointer data) {
     GtkWidget *notebook = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_NOTEBOOK);
     GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(notebook), GTK_TYPE_WINDOW);
 
@@ -94,7 +94,7 @@ static void child_exited_cb(VteTerminal *widget, int status, gpointer data) {
     stulto_destroy_and_quit(window);
 }
 
-static gboolean button_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
+static gboolean vte_button_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     gchar *program = data;
 
     char *match;
@@ -121,7 +121,7 @@ static gboolean button_press_event_cb(GtkWidget *widget, GdkEvent *event, gpoint
     return FALSE;
 }
 
-static void resize_window_cb(GtkWidget *widget, guint width, guint height, gpointer data) {
+static void vte_resize_window_cb(GtkWidget *widget, guint width, guint height, gpointer data) {
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
     VteTerminal *terminal = VTE_TERMINAL(widget);
 
@@ -153,7 +153,7 @@ static void resize_window_cb(GtkWidget *widget, guint width, guint height, gpoin
     gtk_window_resize(GTK_WINDOW(window), width + owidth, height + oheight);
 }
 
-static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
+static gboolean vte_selection_changed_cb(VteTerminal *terminal, gpointer data) {
     if (vte_terminal_get_has_selection(terminal)) {
         vte_terminal_copy_clipboard_format(terminal, VTE_FORMAT_TEXT);
     }
@@ -170,25 +170,26 @@ static void connect_terminal_signals(VteTerminal *vte, StultoTerminalProfile *pr
     GtkWidget *widget = GTK_WIDGET(vte);
 
     /* Connect to the "window-title-changed" signal to set the main window's title */
-    g_signal_connect(vte, "window-title-changed", G_CALLBACK(window_title_changed_cb), NULL);
+    g_signal_connect(vte, "window-title-changed", G_CALLBACK(vte_window_title_changed_cb), NULL);
 
     /* Connect to the "button-press" event. */
     if (profile->program) {
-        g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event_cb), profile->program);
+        g_signal_connect(widget, "button-press-event", G_CALLBACK(vte_button_press_event_cb), profile->program);
     }
 
     /* Connect to application request signals. */
-    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window_cb), NULL);
+    g_signal_connect(widget, "resize-window", G_CALLBACK(vte_resize_window_cb), NULL);
 
     /* Connect to bell signal */
     if (profile->urgent_on_bell) {
-        g_signal_connect(widget, "bell", G_CALLBACK(bell_cb), NULL);
-        g_signal_connect(widget, "focus-in-event", G_CALLBACK(focus_in_event_cb), NULL);
+        g_signal_connect(widget, "bell", G_CALLBACK(vte_bell_cb), NULL);
+        g_signal_connect(widget, "focus-in-event", G_CALLBACK(vte_focus_in_event_cb), NULL);
     }
 
     /* Sync clipboard */
-    if (profile->sync_clipboard)
-        g_signal_connect(widget, "selection-changed", G_CALLBACK(selection_changed_cb), NULL);
+    if (profile->sync_clipboard) {
+        g_signal_connect(widget, "selection-changed", G_CALLBACK(vte_selection_changed_cb), NULL);
+    }
 }
 
 static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *profile) {
@@ -240,7 +241,7 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
         return;
     }
 
-    g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited_cb), NULL);
+    g_signal_connect(widget, "child-exited", G_CALLBACK(vte_child_exited_cb), NULL);
 }
 
 static void stulto_terminal_dispose(GObject *object) {

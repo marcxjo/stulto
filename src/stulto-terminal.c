@@ -21,23 +21,56 @@
 
 #include "exit-status.h"
 
-static void window_title_changed_cb(GtkWidget *widget, gpointer data) {
-    /* TODO - we were previously passing in a pointer to the window to update its title
-     * What we instead want to do is pick up the notify signal for the terminal's `window-title` property
-     * At that point, we should also remove this now vestigial comeback
-     */
+#define STULTO_TERMINAL_TITLEBAR_STYLE_CLASS "stulto-terminal-titlebar"
+
+enum {
+    PROP_0,
+    // TODO - profile is currently not actually implemented as a property - probably want to do this w/GSettings
+    PROP_PROFILE,
+    PROP_TITLE,
+};
+
+struct _StultoTerminal {
+    GtkBin parent_instance;
+
+    StultoTerminalProfile *profile;
+    StultoExecData *exec_data;
+
+    GtkLabel *title;
+    VteTerminal *vte;
+};
+
+G_DEFINE_FINAL_TYPE(StultoTerminal, stulto_terminal, GTK_TYPE_BIN)
+
+static void stulto_terminal_dispose(GObject *object);
+static void stulto_terminal_finalize(GObject *object);
+static void stulto_terminal_init(StultoTerminal *terminal);
+static void stulto_terminal_class_init(StultoTerminalClass *klass);
+
+const char *stulto_terminal_get_title(StultoTerminal *terminal);
+void stulto_terminal_set_title(StultoTerminal *terminal, const char *title);
+
+// region Signal Callbacks
+
+static void window_title_changed_cb(VteTerminal *vte, gpointer data) {
+    // TODO - hoist this so that we can add session index and update the app window title
+    GtkWidget *parent = gtk_widget_get_ancestor(GTK_WIDGET(vte), STULTO_TYPE_TERMINAL);
+
+    StultoTerminal *terminal = STULTO_TERMINAL(parent);
+
+    stulto_terminal_set_title(terminal, vte_terminal_get_window_title(vte));
 }
 
 static void bell_cb(GtkWidget *widget, gpointer data) {
-    GtkWindow *window = data;
+    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
 
-    gtk_window_set_urgency_hint(window, TRUE);
+    gtk_window_set_urgency_hint(GTK_WINDOW(window), TRUE);
 }
 
 static int focus_in_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    GtkWindow *window = data;
+    GtkWidget *window = gtk_widget_get_ancestor(GTK_WIDGET(widget), GTK_TYPE_WINDOW);
 
-    gtk_window_set_urgency_hint(window, FALSE);
+    gtk_window_set_urgency_hint(GTK_WINDOW(window), FALSE);
 
     return FALSE;
 }
@@ -114,63 +147,7 @@ static void resize_window_cb(GtkWidget *widget, guint width, guint height, gpoin
 
     owidth -= char_width * column_count + padding.left + padding.right;
     oheight -= char_height * row_count + padding.top + padding.bottom;
-    gtk_window_resize(GTK_WINDOW(data),
-                      width + owidth, height + oheight);
-}
-
-static void increase_font_size(GtkWidget *widget) {
-    gdouble scale = vte_terminal_get_font_scale(VTE_TERMINAL(widget));
-    vte_terminal_set_font_scale(VTE_TERMINAL(widget), scale * 1.125);
-}
-
-static void decrease_font_size(GtkWidget *widget) {
-    gdouble scale = vte_terminal_get_font_scale(VTE_TERMINAL(widget));
-    vte_terminal_set_font_scale(VTE_TERMINAL(widget), scale / 1.125);
-}
-
-static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    GtkWidget *notebook = gtk_widget_get_ancestor(widget, GTK_TYPE_NOTEBOOK);
-
-    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-
-    g_assert(event->type == GDK_KEY_PRESS);
-
-    if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
-        switch (event->key.hardware_keycode) {
-            case 21: /* + on US keyboards */
-                increase_font_size(widget);
-                return TRUE;
-            case 20: /* - on US keyboards */
-                decrease_font_size(widget);
-                return TRUE;
-        }
-        switch (gdk_keyval_to_lower(event->key.keyval)) {
-            case GDK_KEY_c:
-                vte_terminal_copy_clipboard_format(
-                        (VteTerminal *) widget,
-                        VTE_FORMAT_TEXT);
-                return TRUE;
-            case GDK_KEY_v:
-                vte_terminal_paste_clipboard((VteTerminal *) widget);
-                return TRUE;
-            case GDK_KEY_t:
-                gtk_notebook_append_page(GTK_NOTEBOOK(notebook), stulto_terminal_create(data), gtk_label_new("New Tab"));
-                return TRUE;
-        }
-    }
-
-    if ((event->key.state & modifiers) == (GDK_CONTROL_MASK)) {
-        switch (gdk_keyval_to_lower(event->key.keyval)) {
-            case GDK_KEY_Page_Up:
-                gtk_notebook_prev_page(GTK_NOTEBOOK(notebook));
-                return TRUE;
-            case GDK_KEY_Page_Down:
-                gtk_notebook_next_page(GTK_NOTEBOOK(notebook));
-                return TRUE;
-        }
-    }
-
-    return FALSE;
+    gtk_window_resize(GTK_WINDOW(window), width + owidth, height + oheight);
 }
 
 static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
@@ -181,29 +158,29 @@ static gboolean selection_changed_cb(VteTerminal *terminal, gpointer data) {
     return TRUE;
 }
 
-static void connect_terminal_signals(VteTerminal *terminal, StultoTerminalProfile *profile) {
+// endregion
+
+static void connect_terminal_signals(VteTerminal *vte, StultoTerminalProfile *profile) {
     // TODO - we're passing a window reference into callbacks before we even have an ancestor window
     // We should either store a reference to the window, handle these signals _in_ the window object,
     // or bubble them up via g_object_notify
-    GtkWidget *widget = GTK_WIDGET(terminal);
-    GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
+    GtkWidget *widget = GTK_WIDGET(vte);
 
     /* Connect to the "window-title-changed" signal to set the main window's title */
-    g_signal_connect(widget, "window-title-changed", G_CALLBACK(window_title_changed_cb), NULL);
+    g_signal_connect(vte, "window-title-changed", G_CALLBACK(window_title_changed_cb), NULL);
 
     /* Connect to the "button-press" event. */
-    if (profile->program)
+    if (profile->program) {
         g_signal_connect(widget, "button-press-event", G_CALLBACK(button_press_event_cb), profile->program);
+    }
 
     /* Connect to application request signals. */
-    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window_cb), window);
-
-    g_signal_connect(widget, "key-press-event", G_CALLBACK(key_press_event_cb), profile);
+    g_signal_connect(widget, "resize-window", G_CALLBACK(resize_window_cb), NULL);
 
     /* Connect to bell signal */
     if (profile->urgent_on_bell) {
-        g_signal_connect(widget, "bell", G_CALLBACK(bell_cb), window);
-        g_signal_connect(widget, "focus-in-event", G_CALLBACK(focus_in_event_cb), window);
+        g_signal_connect(widget, "bell", G_CALLBACK(bell_cb), NULL);
+        g_signal_connect(widget, "focus-in-event", G_CALLBACK(focus_in_event_cb), NULL);
     }
 
     /* Sync clipboard */
@@ -248,27 +225,6 @@ static void configure_terminal(VteTerminal *terminal, StultoTerminalProfile *pro
     }
 }
 
-static void get_shell_and_title(VteTerminal *terminal, StultoTerminalProfile *profile) {
-    // TODO - eventually we want to split these out and configure the ability to customize the window title
-    if (profile->command_argv == NULL || profile->command_argv[0] == NULL) {
-        g_strfreev(profile->command_argv);
-        profile->command_argv = g_malloc(2 * sizeof(gchar *));
-        profile->command_argv[0] = vte_get_user_shell();
-        profile->command_argv[1] = NULL;
-
-        if (profile->command_argv[0] == NULL || profile->command_argv[0][0] == '\0') {
-            const gchar *shell = g_getenv("SHELL");
-
-            if (shell == NULL || shell[0] == '\0') {
-                shell = "/bin/sh";
-            }
-
-            g_free(profile->command_argv[0]);
-            profile->command_argv[0] = g_strdup(shell);
-        }
-    }
-}
-
 static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpointer data) {
     GtkWidget *widget = GTK_WIDGET(terminal);
     GtkWidget *window = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
@@ -282,24 +238,26 @@ static void spawn_callback(VteTerminal *terminal, GPid pid, GError *error, gpoin
     }
 
     g_signal_connect(widget, "child-exited", G_CALLBACK(child_exited_cb), NULL);
-
-    gtk_widget_realize(widget);
 }
 
-GtkWidget *stulto_terminal_create(StultoTerminalProfile *profile) {
-    GtkWidget *terminal_widget = vte_terminal_new();
+static void stulto_terminal_dispose(GObject *object) {
+    G_OBJECT_CLASS(stulto_terminal_parent_class)->dispose(object);
+}
 
-    VteTerminal *terminal = VTE_TERMINAL(terminal_widget);
+static void stulto_terminal_finalize(GObject *object) {
+    G_OBJECT_CLASS(stulto_terminal_parent_class)->finalize(object);
+}
 
-    connect_terminal_signals(terminal, profile);
-    configure_terminal(terminal, profile);
-    get_shell_and_title(terminal, profile);
+static void stulto_terminal_realize(GtkWidget *widget) {
+    StultoTerminal *terminal = STULTO_TERMINAL(widget);
+
+    GTK_WIDGET_CLASS(stulto_terminal_parent_class)->realize(widget);
 
     vte_terminal_spawn_async(
-            terminal,
+            terminal->vte,
             VTE_PTY_DEFAULT,
             NULL,
-            profile->command_argv,
+            terminal->exec_data->command_argv, /* TODO - this should be configurable */
             NULL,
             G_SPAWN_SEARCH_PATH,
             NULL,
@@ -309,6 +267,133 @@ GtkWidget *stulto_terminal_create(StultoTerminalProfile *profile) {
             NULL,
             &spawn_callback,
             NULL);
+}
 
-    return terminal_widget;
+static void stulto_terminal_init(StultoTerminal *terminal) {
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+    GtkWidget *titlebar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    // TODO - need to ship a default stylesheet to ensure that terminal titlebars aren't transparent
+    // This makes the app look broken
+    GtkStyleContext *box_style_context = gtk_widget_get_style_context(titlebar);
+    gtk_style_context_add_class(box_style_context, STULTO_TERMINAL_TITLEBAR_STYLE_CLASS);
+
+    GtkWidget *label = gtk_label_new("Stulto");
+    gtk_container_add(GTK_CONTAINER(titlebar), label);
+
+    gtk_box_pack_start(GTK_BOX(box), titlebar, FALSE, FALSE, 0);
+
+    GtkWidget *vte = vte_terminal_new();
+    gtk_box_pack_start(GTK_BOX(box), vte, TRUE, TRUE, 0);
+
+    gtk_container_add(GTK_CONTAINER(terminal), box);
+
+    terminal->vte = VTE_TERMINAL(vte);
+    terminal->title = GTK_LABEL(label);
+}
+
+static void stulto_terminal_set_exec_data(StultoTerminal *terminal, StultoExecData *exec_data)
+{
+    terminal->exec_data = exec_data;
+}
+
+static void stulto_terminal_set_profile(StultoTerminal *terminal, StultoTerminalProfile *profile) {
+    terminal->profile = profile;
+    connect_terminal_signals(VTE_TERMINAL(terminal->vte), terminal->profile);
+    configure_terminal(VTE_TERMINAL(terminal->vte), terminal->profile);
+}
+
+const char *stulto_terminal_get_title(StultoTerminal *terminal) {
+    return vte_terminal_get_window_title(VTE_TERMINAL(terminal->vte));
+}
+
+void stulto_terminal_set_title(StultoTerminal *terminal, const char *title) {
+    GtkLabel *title_widget = GTK_LABEL(terminal->title);
+
+    gtk_label_set_text(title_widget, title);
+}
+
+static void stulto_terminal_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+    StultoTerminal *terminal = STULTO_TERMINAL(object);
+
+    switch (prop_id)
+    {
+        case PROP_TITLE:
+            g_value_set_string (value, stulto_terminal_get_title(terminal));
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+static void stulto_terminal_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    StultoTerminal *screen = STULTO_TERMINAL(object);
+
+    switch (prop_id)
+    {
+        case PROP_PROFILE:
+            stulto_terminal_set_profile(screen, (StultoTerminalProfile *) value);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+static void stulto_terminal_class_init(StultoTerminalClass *klass) {
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+
+    object_class->dispose = stulto_terminal_dispose;
+    object_class->finalize = stulto_terminal_finalize;
+    object_class->get_property = stulto_terminal_get_property;
+    object_class->set_property = stulto_terminal_set_property;
+
+    widget_class->realize = stulto_terminal_realize;
+
+    g_object_class_install_property(
+            object_class,
+            PROP_TITLE,
+            g_param_spec_string(
+                    "title",
+                    "title",
+                    "The terminal's title",
+                    "Stulto",
+                    G_PARAM_READABLE
+            ));
+}
+
+StultoTerminal *stulto_terminal_new(StultoTerminalProfile *profile, StultoExecData *exec_data) {
+    StultoTerminal *terminal = g_object_new(stulto_terminal_get_type(), NULL);
+
+    stulto_terminal_set_profile(terminal, profile);
+    stulto_terminal_set_exec_data(terminal, exec_data);
+    stulto_terminal_set_title(terminal, "Stulto");
+
+    return terminal;
+}
+
+void stulto_terminal_increase_font_size(StultoTerminal *terminal) {
+    VteTerminal *vte = terminal->vte;
+
+    gdouble scale = vte_terminal_get_font_scale(vte);
+    vte_terminal_set_font_scale(vte, scale * 1.125);
+}
+
+void stulto_terminal_decrease_font_size(StultoTerminal *terminal) {
+    VteTerminal *vte = terminal->vte;
+
+    gdouble scale = vte_terminal_get_font_scale(vte);
+    vte_terminal_set_font_scale(vte, scale / 1.125);
+}
+
+void stulto_terminal_copy_clipboard_format(StultoTerminal *terminal, VteFormat format) {
+    vte_terminal_copy_clipboard_format(terminal->vte, format);
+}
+
+void stulto_terminal_paste_clipboard(StultoTerminal *terminal) {
+    vte_terminal_paste_clipboard(terminal->vte);
 }

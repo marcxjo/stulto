@@ -50,13 +50,7 @@ all: $(binary)
 release: CPPFLAGS += -DG_DISABLE_ASSERT -DNDEBUG
 release: $(binary)
 
-$(binary): src/stulto-app-config.h \
-           src/stulto-terminal-profile.h src/stulto-terminal-profile.c \
-           src/exit-status.h src/exit-status.c \
-           src/stulto-headerbar.h src/stulto-headerbar.c \
-           src/stulto-terminal.h src/stulto-terminal.c \
-           src/stulto-application.h src/stulto-application.c \
-           src/stulto.c
+$(binary): src/*.h src/*.c
 	$E '  CC/LD   $@'
 	$Q$(CC) $(CFLAGS) $(CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 

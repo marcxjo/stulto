@@ -35,9 +35,6 @@ gboolean stulto_application_create(int argc, char *argv[]) {
     StultoAppConfig *config = g_malloc0(sizeof(StultoAppConfig));
     gchar **cmd_argv = NULL;
 
-    // TODO - when we refactor to GtkApplication, most of these options will go away
-    // Those that remain should live in the application type rather than tangled up with the config model
-    // (i.e., if it can live in the config file, it should _only_ live there)
     GOptionEntry options[] = {
             {
                     .long_name = "config",
@@ -109,23 +106,9 @@ gboolean stulto_application_create(int argc, char *argv[]) {
         return FALSE;
     }
 
-    /* Create a window to hold the scrolling shell, and hook its delete event to the quit function */
     StultoTerminal *terminal = stulto_terminal_new(profile, exec_data);
     StultoMainWindow *window = stulto_main_window_new(terminal, config);
 
-//    if (config->enable_headerbar)
-//    {
-//        GtkWidget *header_bar = stulto_headerbar_create();
-//        gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
-//    }
-
-
-    if (config->role) {
-        gtk_window_set_role(GTK_WINDOW(window), config->role);
-        g_free(config->role);
-    }
-
-//    gtk_widget_grab_focus(GTK_WIDGET(terminal));
     gtk_widget_show_all(GTK_WIDGET(window));
 
     return TRUE;

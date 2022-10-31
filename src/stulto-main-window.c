@@ -36,6 +36,9 @@ G_DEFINE_FINAL_TYPE(StultoMainWindow, stulto_main_window, GTK_TYPE_WINDOW)
 
 static void stulto_main_window_dispose(GObject *object);
 static void stulto_main_window_finalize(GObject *object);
+
+static void stulto_main_window_realize(GtkWidget *widget);
+
 static void stulto_main_window_init(StultoMainWindow *main_window);
 static void stulto_main_window_class_init(StultoMainWindowClass *klass);
 
@@ -119,6 +122,25 @@ static void stulto_main_window_finalize(GObject *object) {
     G_OBJECT_CLASS(stulto_main_window_parent_class)->finalize(object);
 }
 
+static void stulto_main_window_realize(GtkWidget *widget) {
+    StultoMainWindow *main_window = STULTO_MAIN_WINDOW(widget);
+    StultoAppConfig *config = main_window->config;
+
+    // TODO - re-implement headerbar as OOP
+    // if (config->enable_headerbar)
+    // {
+    //    GtkWidget *header_bar = stulto_headerbar_create();
+    //    gtk_window_set_titlebar(GTK_WINDOW(main_window), header_bar);
+    // }
+
+    if (config->role) {
+        gtk_window_set_role(GTK_WINDOW(main_window), config->role);
+        g_free(config->role);
+    }
+
+    GTK_WIDGET_CLASS(stulto_main_window_parent_class)->realize(widget);
+}
+
 static void stulto_main_window_init(StultoMainWindow *main_window) {
     GtkWidget *window_widget = GTK_WIDGET(main_window);
 
@@ -140,9 +162,12 @@ static void stulto_main_window_init(StultoMainWindow *main_window) {
 
 static void stulto_main_window_class_init(StultoMainWindowClass *klass) {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
     object_class->dispose = stulto_main_window_dispose;
     object_class->finalize = stulto_main_window_finalize;
+
+    widget_class->realize = stulto_main_window_realize;
 }
 
 StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConfig *config) {

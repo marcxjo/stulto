@@ -44,6 +44,9 @@ G_DEFINE_FINAL_TYPE(StultoTerminal, stulto_terminal, GTK_TYPE_BIN)
 
 static void stulto_terminal_dispose(GObject *object);
 static void stulto_terminal_finalize(GObject *object);
+
+static void stulto_terminal_realize(GtkWidget *widget);
+
 static void stulto_terminal_init(StultoTerminal *terminal);
 static void stulto_terminal_class_init(StultoTerminalClass *klass);
 

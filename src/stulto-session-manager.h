@@ -35,6 +35,9 @@ void stulto_session_manager_add_terminal(StultoSessionManager *session_manager, 
 void stulto_session_manager_prev_session(StultoSessionManager *session_manager);
 void stulto_session_manager_next_session(StultoSessionManager *session_manager);
 
+gint stulto_session_manager_get_current_terminal(StultoSessionManager *session_manager);
+gint stulto_session_manager_get_n_terminals(StultoSessionManager *session_manager);
+
 G_END_DECLS
 
 #endif //STULTO_SESSION_MANAGER_H

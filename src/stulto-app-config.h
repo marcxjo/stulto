@@ -24,6 +24,11 @@
 
 #include "stulto-terminal-profile.h"
 
+/*
+ * An object that stores global/app-wide settings
+ * This will eventually be migrated to GSettings
+ */
+
 typedef struct _StultoAppConfig {
     gchar *role;
     gchar *initial_profile_path; // For this instance of the app

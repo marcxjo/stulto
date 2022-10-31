@@ -25,6 +25,11 @@
 #include "stulto-terminal-profile.h"
 #include "stulto-exec-data.h"
 
+/*
+ * This is Stulto's terminal widget - essentially a typical VteTerminal, but configured via its own config object type
+ * and rendered with a titlebar which indicates the session index and the current terminal process
+ */
+
 G_BEGIN_DECLS
 
 #define STULTO_TYPE_TERMINAL stulto_terminal_get_type()

@@ -22,6 +22,11 @@
 
 #include <gtk/gtk.h>
 
+/*
+ * A Gtk CSD widget for Stulto
+ * This implementation is currently WIP
+ */
+
 GtkWidget *stulto_headerbar_create();
 
 #endif //STULTO_HEADERBAR_H

@@ -25,6 +25,11 @@
 #include "stulto-terminal.h"
 #include "stulto-app-config.h"
 
+/*
+ * The window containing the terminal sessions for this instance of Stulto
+ * This will eventually be migrated to GtkApplicationWindow
+ */
+
 G_BEGIN_DECLS
 
 #define STULTO_TYPE_MAIN_WINDOW stulto_main_window_get_type()

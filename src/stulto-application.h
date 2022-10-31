@@ -22,6 +22,11 @@
 
 #include <glib.h>
 
+/*
+ * The top-level abstraction of Stulto - i.e., the app itself
+ * This will eventually be migrated to GtkApplication
+ */
+
 gboolean stulto_application_create(int argc, char *argv[]);
 
 int stulto_get_exit_status();

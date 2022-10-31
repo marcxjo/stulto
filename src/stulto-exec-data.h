@@ -22,6 +22,10 @@
 
 #include <glib.h>
 
+/*
+ * An object that stores data about the command to be executed in a terminal to be opened
+ */
+
 typedef struct _StultoExecData {
     gchar **command_argv;
 } StultoExecData;

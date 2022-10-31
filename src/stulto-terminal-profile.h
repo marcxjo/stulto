@@ -29,6 +29,15 @@
 
 #endif
 
+/*
+ * An object that stores settings specifically for a terminal widget
+ *
+ * Currently, this is specified at startup and applied to every subsequent terminal opened in the same instance of the
+ * application
+ *
+ * Eventually, we'll implement functionality to allow selecting profiles per-terminal at runtime
+ */
+
 typedef struct _StultoTerminalProfile {
     gchar *config_file;
     gchar *font;

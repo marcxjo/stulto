@@ -28,100 +28,12 @@
 #include "stulto-terminal.h"
 #include "stulto-headerbar.h"
 #include "stulto-app-config.h"
-
-static void screen_changed_cb(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
-    GdkScreen *screen = gtk_widget_get_screen(widget);
-    GdkVisual *visual = NULL;
-
-    if (gdk_screen_is_composited(screen)) {
-        visual = gdk_screen_get_rgba_visual(screen);
-    }
-
-    if (!visual) {
-        visual = gdk_screen_get_system_visual(screen);
-    }
-
-    gtk_widget_set_visual(widget, visual);
-}
-
-static void delete_event_cb(GtkWidget *window, GdkEvent *event, gpointer data) {
-    stulto_set_exit_status(EXIT_SUCCESS);
-
-    stulto_destroy_and_quit(window);
-}
-
-static void page_added_cb(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    StultoTerminalProfile *profile = data;
-
-    gchar *tab_label = g_strdup_printf("%d: %s", page_num, profile->command_argv[0]);
-    gtk_notebook_set_tab_label(notebook, child, gtk_label_new(tab_label));
-    g_free(tab_label);
-
-    gtk_notebook_set_current_page(notebook, (gint) page_num);
-}
-
-static void switch_page_cb(GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data) {
-    gtk_widget_show(child);
-    /* TODO - we were previously passing in a pointer to the window to update its title
-     * What we instead want to do is pick up the notify signal for the notebook's `page` property
-     */
-}
-
-static void parse_command_line_options(GOptionEntry *options, GKeyFile *file, gchar *filename, GError *error) {
-    GOptionEntry *entry;
-    gboolean option;
-
-    for (entry = options; entry->long_name; entry++) {
-        switch (entry->arg) {
-            case G_OPTION_ARG_NONE:
-                option = g_key_file_get_boolean(
-                        file, "options",
-                        entry->long_name,
-                        &error);
-                if (*((gboolean *) entry->arg_data)) {
-                    *((gboolean *) entry->arg_data) = !option;
-                } else {
-                    *((gboolean *) entry->arg_data) = option;
-                }
-                break;
-            case G_OPTION_ARG_INT:
-                if (*((gint *) entry->arg_data) == 0) {
-                    *((gint *) entry->arg_data) = g_key_file_get_integer(
-                            file, "options",
-                            entry->long_name,
-                            &error);
-                }
-                break;
-            case G_OPTION_ARG_STRING:
-                if (*((gchar **) entry->arg_data) == NULL) {
-                    *((gchar **) entry->arg_data) = g_key_file_get_string(
-                            file, "options",
-                            entry->long_name,
-                            &error);
-                }
-                break;
-            default:
-                continue;
-        }
-        if (error) {
-            switch (error->code) {
-                case G_KEY_FILE_ERROR_GROUP_NOT_FOUND:
-                case G_KEY_FILE_ERROR_KEY_NOT_FOUND:
-                    break;
-                default:
-                    g_printerr(
-                            "Error parsing '%s': %s\n",
-                            filename, error->message);
-            }
-            g_error_free(error);
-            error = NULL;
-        }
-    }
-}
+#include "stulto-exec-data.h"
+#include "stulto-main-window.h"
 
 gboolean stulto_application_create(int argc, char *argv[]) {
-    StultoTerminalProfile *profile = g_malloc(sizeof(StultoTerminalProfile));
     StultoAppConfig *config = g_malloc0(sizeof(StultoAppConfig));
+    gchar **cmd_argv = NULL;
 
     // TODO - when we refactor to GtkApplication, most of these options will go away
     // Those that remain should live in the application type rather than tangled up with the config model
@@ -131,7 +43,7 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .long_name = "config",
                     .short_name = 'c',
                     .arg = G_OPTION_ARG_STRING,
-                    .arg_data = &profile->config_file,
+                    .arg_data = &config->initial_profile_path,
                     .description = "Specify alternative config file",
                     .arg_description = "FILE",
             },
@@ -154,10 +66,11 @@ gboolean stulto_application_create(int argc, char *argv[]) {
             {
                     .long_name = G_OPTION_REMAINING,
                     .arg = G_OPTION_ARG_STRING_ARRAY,
-                    .arg_data = &profile->command_argv,
+                    .arg_data = cmd_argv,
             },
             {} /* terminator */
     };
+
     GError *error = NULL;
 
     if (!gtk_init_with_args(
@@ -170,6 +83,10 @@ gboolean stulto_application_create(int argc, char *argv[]) {
         return FALSE;
     }
 
+    StultoExecData *exec_data = stulto_exec_data_create(cmd_argv);
+    StultoTerminalProfile *profile = stulto_terminal_profile_parse(config->initial_profile_path);
+    config->initial_profile = profile;
+
     gchar *filename = profile->config_file
             ? profile->config_file
             : g_build_filename(
@@ -177,9 +94,6 @@ gboolean stulto_application_create(int argc, char *argv[]) {
             "stulto",
             "stulto.ini",
             NULL);
-
-    GKeyFile *file = g_key_file_new();
-    g_key_file_load_from_file(file, filename, G_KEY_FILE_NONE, &error);
 
     if (error) {
         switch (error->code) {
@@ -190,55 +104,29 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                 g_printerr("Error opening '%s': %s\n", filename, error->message);
         }
         g_error_free(error);
-        g_key_file_free(file);
         g_free(filename);
 
         return FALSE;
     }
 
-    stulto_terminal_profile_parse(profile, file, filename);
-    parse_command_line_options(options, file, filename, error);
+    /* Create a window to hold the scrolling shell, and hook its delete event to the quit function */
+    StultoTerminal *terminal = stulto_terminal_new(profile, exec_data);
+    StultoMainWindow *window = stulto_main_window_new(terminal, config);
 
-    /* Create a window to hold the scrolling shell, and hook its
-     * delete event to the quit function.. */
-    GtkWidget * window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    g_signal_connect(window, "delete-event", G_CALLBACK(delete_event_cb), NULL);
+//    if (config->enable_headerbar)
+//    {
+//        GtkWidget *header_bar = stulto_headerbar_create();
+//        gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
+//    }
 
-    if (config->enable_headerbar)
-    {
-        GtkWidget *header_bar = stulto_headerbar_create();
-        gtk_window_set_titlebar(GTK_WINDOW(window), header_bar);
-    }
-
-    /* Fix transparency in GNOME/Mutter */
-    gtk_widget_set_app_paintable(window, TRUE);
-
-    /* Use rgba colour map if possible */
-    screen_changed_cb(window, NULL, NULL);
-    g_signal_connect(window, "screen-changed", G_CALLBACK(screen_changed_cb), NULL);
 
     if (config->role) {
         gtk_window_set_role(GTK_WINDOW(window), config->role);
         g_free(config->role);
     }
 
-    /* Create the terminal widget and add it to the window */
-    GtkWidget *notebook = gtk_notebook_new();
-    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
-    gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
-    gtk_container_add(GTK_CONTAINER(window), notebook);
-
-    g_signal_connect(notebook, "page-added", G_CALLBACK(page_added_cb), profile);
-    g_signal_connect(notebook, "switch-page", G_CALLBACK(switch_page_cb), NULL);
-
-    // For whatever odd reason, the first terminal created, doesn't capture focus automatically
-    GtkWidget *term = stulto_terminal_create(profile);
-
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), term, NULL);
-
-    gtk_widget_grab_focus(term);
-
-    gtk_widget_show_all(window);
+//    gtk_widget_grab_focus(GTK_WIDGET(terminal));
+    gtk_widget_show_all(GTK_WIDGET(window));
 
     return TRUE;
 }

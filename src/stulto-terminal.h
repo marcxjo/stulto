@@ -38,7 +38,7 @@ G_DECLARE_FINAL_TYPE(StultoTerminal, stulto_terminal, STULTO, TERMINAL, GtkBin)
 StultoTerminal *stulto_terminal_new(StultoTerminalProfile *profile, StultoExecData *exec_data);
 
 const char *stulto_terminal_get_title(StultoTerminal *terminal);
-void stulto_terminal_set_title(StultoTerminal *terminal, const char *title);
+void stulto_terminal_set_title(StultoTerminal *terminal, gchar *title);
 
 void stulto_terminal_increase_font_size(StultoTerminal *terminal);
 void stulto_terminal_decrease_font_size(StultoTerminal *terminal);

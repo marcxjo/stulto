@@ -91,7 +91,7 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
                 stulto_terminal_paste_clipboard(active_terminal);
                 return TRUE;
             case GDK_KEY_t:
-                stulto_session_manager_add_terminal(
+                stulto_session_manager_add_session(
                         session_manager,
                         stulto_terminal_new(main_widow->config->initial_profile, stulto_exec_data_default()));
                 return TRUE;
@@ -110,6 +110,22 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
     }
 
     return FALSE;
+}
+
+static void stulto_main_window_session_manager_notify_active_session_cb(GObject *object, GParamSpec *pspec, gpointer data) {
+    GtkWindow *window = data;
+
+    StultoSessionManager *session_manager = STULTO_SESSION_MANAGER(object);
+
+    gint terminal_id = stulto_session_manager_get_active_session_id(session_manager);
+    gint num_sessions = stulto_session_manager_get_n_sessions(session_manager);
+
+    // GtkNotebook uses zero-based page numbering, hence we add 1 for user-friendly output
+    gchar *new_title = g_strdup_printf("[%d/%d] Stulto", terminal_id + 1, num_sessions);
+
+    gtk_window_set_title(window, new_title);
+
+    g_free(new_title);
 }
 
 // endregion
@@ -157,7 +173,12 @@ static void stulto_main_window_init(StultoMainWindow *main_window) {
     gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(session_manager));
     main_window->session_manager = session_manager;
 
-    g_signal_connect(GTK_WIDGET(main_window), "key-press-event", G_CALLBACK(key_press_event_cb), NULL);
+    g_signal_connect(window_widget, "key-press-event", G_CALLBACK(key_press_event_cb), NULL);
+
+    g_signal_connect(main_window->session_manager,
+                     "notify::active-session",
+                     G_CALLBACK(stulto_main_window_session_manager_notify_active_session_cb),
+                     main_window);
 }
 
 static void stulto_main_window_class_init(StultoMainWindowClass *klass) {
@@ -173,7 +194,7 @@ static void stulto_main_window_class_init(StultoMainWindowClass *klass) {
 StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConfig *config) {
     StultoMainWindow *main_window = STULTO_MAIN_WINDOW(g_object_new(STULTO_TYPE_MAIN_WINDOW, NULL));
 
-    stulto_session_manager_add_terminal(main_window->session_manager, terminal);
+    stulto_session_manager_add_session(main_window->session_manager, terminal);
     main_window->active_terminal = terminal;
     main_window->config = config;
 

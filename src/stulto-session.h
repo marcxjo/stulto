@@ -17,27 +17,30 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STULTO_MAIN_WINDOW_H
-#define STULTO_MAIN_WINDOW_H
+#ifndef STULTO_SESSION_H
+#define STULTO_SESSION_H
 
 #include <gtk/gtk.h>
-
 #include "stulto-terminal.h"
-#include "stulto-app-config.h"
 
-/*
- * The window containing the terminal sessions for this instance of Stulto
- * This will eventually be migrated to GtkApplicationWindow
+/**
+ * A container type that hosts multiple terminal sessions as tiled widgets
+ * WIP - currently only hosts a single session
  */
 
 G_BEGIN_DECLS
 
-#define STULTO_TYPE_MAIN_WINDOW stulto_main_window_get_type()
-G_DECLARE_FINAL_TYPE(StultoMainWindow, stulto_main_window, STULTO, MAIN_WINDOW, GtkWindow)
+#define STULTO_TYPE_SESSION stulto_session_get_type()
+G_DECLARE_FINAL_TYPE(StultoSession, stulto_session, STULTO, SESSION, GtkBin)
 
-StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConfig *config);
-void *stulto_main_window_add_terminal();
+StultoSession *stulto_session_new(StultoTerminal *terminal);
+
+StultoTerminal *stulto_session_get_active_terminal(StultoSession *session);
+void stulto_session_set_active_terminal(StultoSession *session, StultoTerminal *terminal);
+
+gint stulto_session_get_active_terminal_id(StultoSession *session);
+void stulto_session_set_active_terminal_id(StultoSession *session, gint terminal_id);
 
 G_END_DECLS
 
-#endif //STULTO_MAIN_WINDOW_H
+#endif //STULTO_SESSION_H

@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 
 #include "stulto-terminal.h"
+#include "stulto-session.h"
 
 G_BEGIN_DECLS
 
@@ -30,13 +31,19 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(StultoSessionManager, stulto_session_manager, STULTO, SESSION_MANAGER, GtkNotebook)
 
 StultoSessionManager *stulto_session_manager_new();
-void stulto_session_manager_add_terminal(StultoSessionManager *session_manager, StultoTerminal *terminal);
+
+StultoSession *stulto_session_manager_get_active_session(StultoSessionManager *session_manager);
+void stulto_session_manager_set_active_session(StultoSessionManager *session_manager, StultoSession *session);
+
+gint stulto_session_manager_get_active_session_id(StultoSessionManager *session_manager);
+void stulto_session_manager_set_active_session_id(StultoSessionManager *session_manager, gint session_id);
+
+gint stulto_session_manager_get_n_sessions(StultoSessionManager *session_manager);
+
+void stulto_session_manager_add_session(StultoSessionManager *session_manager, StultoTerminal *first_terminal);
 
 void stulto_session_manager_prev_session(StultoSessionManager *session_manager);
 void stulto_session_manager_next_session(StultoSessionManager *session_manager);
-
-gint stulto_session_manager_get_current_terminal(StultoSessionManager *session_manager);
-gint stulto_session_manager_get_n_terminals(StultoSessionManager *session_manager);
 
 G_END_DECLS
 

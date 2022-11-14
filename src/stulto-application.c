@@ -26,7 +26,6 @@
 #include "exit-status.h"
 #include "stulto-terminal-profile.h"
 #include "stulto-terminal.h"
-#include "stulto-headerbar.h"
 #include "stulto-app-config.h"
 #include "stulto-exec-data.h"
 #include "stulto-main-window.h"
@@ -53,12 +52,10 @@ gboolean stulto_application_create(int argc, char *argv[]) {
                     .arg_description = "ROLE",
             },
             {
-                    // TODO - this will become opt-out once the headerbar design is fully implemented
-                    // (Assuming there hasn't yet been user uptake AND users don't voice strong opposition)
-                    .long_name = "enable-headerbar",
+                    .long_name = "disable-headerbar",
                     .arg = G_OPTION_ARG_NONE,
-                    .arg_data = &config->enable_headerbar,
-                    .description = "Enable CSD-style headerbar",
+                    .arg_data = &config->disable_headerbar,
+                    .description = "Disable CSD-style headerbar",
             },
             {
                     .long_name = G_OPTION_REMAINING,

@@ -23,6 +23,7 @@
 #include "stulto-session-manager.h"
 #include "exit-status.h"
 #include "stulto-app-config.h"
+#include "stulto-header-bar.h"
 
 struct _StultoMainWindow {
     GtkWindow parent_instance;
@@ -30,6 +31,7 @@ struct _StultoMainWindow {
     StultoAppConfig *config;
     StultoSessionManager *session_manager;
     StultoTerminal *active_terminal;
+    StultoHeaderBar *header_bar;
 };
 
 G_DEFINE_FINAL_TYPE(StultoMainWindow, stulto_main_window, GTK_TYPE_WINDOW)
@@ -43,6 +45,36 @@ static void stulto_main_window_init(StultoMainWindow *main_window);
 static void stulto_main_window_class_init(StultoMainWindowClass *klass);
 
 // region Signal Callbacks
+
+static void header_bar_add_session_cb(StultoHeaderBar *header_bar, gpointer data) {
+    StultoMainWindow *main_window = data;
+
+    StultoAppConfig *config = main_window->config;
+
+    g_return_if_fail(config != NULL);
+
+    StultoSessionManager *session_manager = main_window->session_manager;
+
+    g_return_if_fail(STULTO_IS_SESSION_MANAGER(session_manager));
+
+    stulto_session_manager_add_session(session_manager, stulto_terminal_new(config->initial_profile, stulto_exec_data_default()));
+}
+
+static void header_bar_prev_session_cb(StultoHeaderBar *header_bar, gpointer data) {
+    StultoSessionManager *session_manager = data;
+
+    g_return_if_fail(STULTO_IS_SESSION_MANAGER(session_manager));
+
+    stulto_session_manager_prev_session(session_manager);
+}
+
+static void header_bar_next_session_cb(StultoHeaderBar *header_bar, gpointer data) {
+    StultoSessionManager *session_manager = data;
+
+    g_return_if_fail(STULTO_IS_SESSION_MANAGER(session_manager));
+
+    stulto_session_manager_next_session(session_manager);
+}
 
 static void screen_changed_cb(GtkWidget *widget, GdkScreen *old_screen, gpointer data) {
     GdkScreen *screen = gtk_widget_get_screen(widget);
@@ -113,6 +145,7 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
 }
 
 static void stulto_main_window_session_manager_notify_active_session_cb(GObject *object, GParamSpec *pspec, gpointer data) {
+    StultoMainWindow *main_window = data;
     GtkWindow *window = data;
 
     StultoSessionManager *session_manager = STULTO_SESSION_MANAGER(object);
@@ -120,12 +153,21 @@ static void stulto_main_window_session_manager_notify_active_session_cb(GObject 
     gint terminal_id = stulto_session_manager_get_active_session_id(session_manager);
     gint num_sessions = stulto_session_manager_get_n_sessions(session_manager);
 
-    // GtkNotebook uses zero-based page numbering, hence we add 1 for user-friendly output
-    gchar *new_title = g_strdup_printf("[%d/%d] Stulto", terminal_id + 1, num_sessions);
+    g_return_if_fail(main_window->config != NULL);
 
-    gtk_window_set_title(window, new_title);
+    if (main_window->config->disable_headerbar)
+    {
+        // GtkNotebook uses zero-based page numbering, hence we add 1 for user-friendly output
+        gchar *new_title = g_strdup_printf("[%d/%d] Stulto", terminal_id + 1, num_sessions);
 
-    g_free(new_title);
+        gtk_window_set_title(window, new_title);
+
+        g_free(new_title);
+
+        return;
+    }
+
+    stulto_header_bar_set_session_indicator_label(main_window->header_bar, terminal_id, num_sessions);
 }
 
 // endregion
@@ -142,17 +184,15 @@ static void stulto_main_window_realize(GtkWidget *widget) {
     StultoMainWindow *main_window = STULTO_MAIN_WINDOW(widget);
     StultoAppConfig *config = main_window->config;
 
-    // TODO - re-implement headerbar as OOP
-    // if (config->enable_headerbar)
-    // {
-    //    GtkWidget *header_bar = stulto_headerbar_create();
-    //    gtk_window_set_titlebar(GTK_WINDOW(main_window), header_bar);
-    // }
-
     if (config->role) {
         gtk_window_set_role(GTK_WINDOW(main_window), config->role);
         g_free(config->role);
     }
+
+    gchar *window_title = g_strdup(config->disable_headerbar ? "[1/1] Stulto" : "Stulto");
+
+    gtk_window_set_title(GTK_WINDOW(main_window), window_title);
+    g_free(window_title);
 
     GTK_WIDGET_CLASS(stulto_main_window_parent_class)->realize(widget);
 }
@@ -179,6 +219,14 @@ static void stulto_main_window_init(StultoMainWindow *main_window) {
                      "notify::active-session",
                      G_CALLBACK(stulto_main_window_session_manager_notify_active_session_cb),
                      main_window);
+
+    StultoHeaderBar *header_bar = stulto_header_bar_new();
+
+    g_signal_connect(header_bar, "new-session", G_CALLBACK(header_bar_add_session_cb), main_window);
+    g_signal_connect(header_bar, "prev-session", G_CALLBACK(header_bar_prev_session_cb), main_window->session_manager);
+    g_signal_connect(header_bar, "next-session", G_CALLBACK(header_bar_next_session_cb), main_window->session_manager);
+
+    main_window->header_bar = header_bar;
 }
 
 static void stulto_main_window_class_init(StultoMainWindowClass *klass) {
@@ -197,6 +245,10 @@ StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConf
     stulto_session_manager_add_session(main_window->session_manager, terminal);
     main_window->active_terminal = terminal;
     main_window->config = config;
+
+    if(!config->disable_headerbar) {
+        gtk_window_set_titlebar(GTK_WINDOW(main_window), GTK_WIDGET(main_window->header_bar));
+    }
 
     return main_window;
 }

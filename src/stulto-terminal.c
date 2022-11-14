@@ -20,6 +20,7 @@
 #include "stulto-terminal.h"
 
 #include "exit-status.h"
+#include <vte/vte.h>
 
 struct _StultoTerminal {
     GtkBin parent_instance;
@@ -41,7 +42,7 @@ enum {
     N_PROPERTIES
 };
 
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
+static GParamSpec *obj_properties[N_PROPERTIES];
 
 #define STULTO_TERMINAL_TITLEBAR_STYLE_CLASS "stulto-terminal-titlebar"
 

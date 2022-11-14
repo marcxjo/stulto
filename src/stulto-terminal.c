@@ -20,6 +20,7 @@
 #include "stulto-terminal.h"
 
 #include "exit-status.h"
+#include <vte/vte.h>
 
 struct _StultoTerminal {
     GtkBin parent_instance;

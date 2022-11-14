@@ -34,7 +34,7 @@ typedef struct _StultoAppConfig {
     gchar *initial_profile_path; // For this instance of the app
     // TODO - this is a little dirty - makes a decent case to migrate to GSettings
     StultoTerminalProfile *initial_profile;
-    gboolean enable_headerbar;
+    gboolean disable_headerbar;
 } StultoAppConfig;
 
 #endif //STULTO_APP_CONFIG_H

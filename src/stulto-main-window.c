@@ -142,13 +142,6 @@ static void stulto_main_window_realize(GtkWidget *widget) {
     StultoMainWindow *main_window = STULTO_MAIN_WINDOW(widget);
     StultoAppConfig *config = main_window->config;
 
-    // TODO - re-implement headerbar as OOP
-    // if (config->enable_headerbar)
-    // {
-    //    GtkWidget *header_bar = stulto_headerbar_create();
-    //    gtk_window_set_titlebar(GTK_WINDOW(main_window), header_bar);
-    // }
-
     if (config->role) {
         gtk_window_set_role(GTK_WINDOW(main_window), config->role);
         g_free(config->role);

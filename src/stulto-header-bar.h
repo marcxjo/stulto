@@ -17,8 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef STULTO_HEADERBAR_H
-#define STULTO_HEADERBAR_H
+#ifndef STULTO_HEADER_BAR_H
+#define STULTO_HEADER_BAR_H
 
 #include <gtk/gtk.h>
 
@@ -27,6 +27,15 @@
  * This implementation is currently WIP
  */
 
-GtkWidget *stulto_headerbar_create();
+G_BEGIN_DECLS
 
-#endif //STULTO_HEADERBAR_H
+#define STULTO_TYPE_HEADER_BAR stulto_header_bar_get_type()
+G_DECLARE_FINAL_TYPE(StultoHeaderBar, stulto_header_bar, STULTO, HEADER_BAR, GtkHeaderBar)
+
+StultoHeaderBar *stulto_header_bar_new();
+
+void stulto_header_bar_set_session_indicator_label(StultoHeaderBar *header_bar, gint current_session, gint num_sessions);
+
+G_END_DECLS
+
+#endif //STULTO_HEADER_BAR_H

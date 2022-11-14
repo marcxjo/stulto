@@ -41,7 +41,7 @@ enum {
     N_PROPERTIES
 };
 
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
+static GParamSpec *obj_properties[N_PROPERTIES];
 
 #define STULTO_TERMINAL_TITLEBAR_STYLE_CLASS "stulto-terminal-titlebar"
 

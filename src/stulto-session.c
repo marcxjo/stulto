@@ -33,7 +33,7 @@ enum {
     N_PROPERTIES
 };
 
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL };
+static GParamSpec *obj_properties[N_PROPERTIES];
 
 // region Declarations
 

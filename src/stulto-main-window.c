@@ -99,7 +99,6 @@ static void delete_event_cb(GtkWidget *window, GdkEvent *event, gpointer data) {
 
 static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     StultoMainWindow *main_widow = STULTO_MAIN_WINDOW(widget);
-    StultoTerminal *active_terminal = main_widow->active_terminal;
     StultoSessionManager *session_manager = main_widow->session_manager;
 
     GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
@@ -107,21 +106,7 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
     g_assert(event->type == GDK_KEY_PRESS);
 
     if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
-        switch (event->key.hardware_keycode) {
-            case 21: /* + on US keyboards */
-                stulto_terminal_increase_font_size(active_terminal);
-                return TRUE;
-            case 20: /* - on US keyboards */
-                stulto_terminal_decrease_font_size(active_terminal);
-                return TRUE;
-        }
         switch (gdk_keyval_to_lower(event->key.keyval)) {
-            case GDK_KEY_c:
-                stulto_terminal_copy_clipboard_format(active_terminal, VTE_FORMAT_TEXT);
-                return TRUE;
-            case GDK_KEY_v:
-                stulto_terminal_paste_clipboard(active_terminal);
-                return TRUE;
             case GDK_KEY_t:
                 stulto_session_manager_add_session(
                         session_manager,

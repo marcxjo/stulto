@@ -40,12 +40,6 @@ StultoTerminal *stulto_terminal_new(StultoTerminalProfile *profile, StultoExecDa
 const char *stulto_terminal_get_title(StultoTerminal *terminal);
 void stulto_terminal_set_title(StultoTerminal *terminal, gchar *title);
 
-void stulto_terminal_increase_font_size(StultoTerminal *terminal);
-void stulto_terminal_decrease_font_size(StultoTerminal *terminal);
-
-void stulto_terminal_copy_clipboard_format(StultoTerminal *terminal, VteFormat format);
-void stulto_terminal_paste_clipboard(StultoTerminal *terminal);
-
 G_END_DECLS
 
 #endif //STULTO_TERMINAL_H

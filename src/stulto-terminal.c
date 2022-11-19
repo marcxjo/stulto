@@ -449,29 +449,3 @@ void stulto_terminal_set_title(StultoTerminal *terminal, gchar *title) {
 }
 
 // endregion
-
-// region Key-press actions
-
-void stulto_terminal_increase_font_size(StultoTerminal *terminal) {
-    VteTerminal *terminal_widget = terminal->terminal_widget;
-
-    gdouble scale = vte_terminal_get_font_scale(terminal_widget);
-    vte_terminal_set_font_scale(terminal_widget, scale * 1.125);
-}
-
-void stulto_terminal_decrease_font_size(StultoTerminal *terminal) {
-    VteTerminal *terminal_widget = terminal->terminal_widget;
-
-    gdouble scale = vte_terminal_get_font_scale(terminal_widget);
-    vte_terminal_set_font_scale(terminal_widget, scale / 1.125);
-}
-
-void stulto_terminal_copy_clipboard_format(StultoTerminal *terminal, VteFormat format) {
-    vte_terminal_copy_clipboard_format(terminal->terminal_widget, format);
-}
-
-void stulto_terminal_paste_clipboard(StultoTerminal *terminal) {
-    vte_terminal_paste_clipboard(terminal->terminal_widget);
-}
-
-// endregion

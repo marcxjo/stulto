@@ -114,6 +114,38 @@ static void vte_child_exited_cb(VteTerminal *widget, int status, gpointer data) 
     stulto_destroy_and_quit(window);
 }
 
+static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    VteTerminal *vte = VTE_TERMINAL(widget);
+
+    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+
+    g_assert(event->type == GDK_KEY_PRESS);
+
+    if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
+        switch (event->key.hardware_keycode) {
+            case 21: /* + on US keyboards */
+                vte_terminal_set_font_scale(vte, vte_terminal_get_font_scale(vte) * 1.25);
+                return TRUE;
+            case 20: /* - on US keyboards */
+                vte_terminal_set_font_scale(vte, vte_terminal_get_font_scale(vte) / 1.25);
+                return TRUE;
+            case 19: /* zero/right parenthesis on US keyboards */
+                vte_terminal_set_font_scale(vte, 1);
+                return TRUE;
+        }
+        switch (gdk_keyval_to_lower(event->key.keyval)) {
+            case GDK_KEY_c:
+                vte_terminal_copy_clipboard_format(vte, VTE_FORMAT_TEXT);
+                return TRUE;
+            case GDK_KEY_v:
+                vte_terminal_paste_clipboard(vte);
+                return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static gboolean vte_button_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data) {
     gchar *program = data;
 
@@ -209,6 +241,8 @@ static void connect_terminal_signals(VteTerminal *terminal_widget, StultoTermina
 
     /* Connect to the "window-title-changed" signal to set the main window's title */
     g_signal_connect(terminal_widget, "window-title-changed", G_CALLBACK(vte_window_title_changed_cb), NULL);
+
+    g_signal_connect(terminal_widget, "key-press-event", G_CALLBACK(key_press_event_cb), NULL);
 
     /* Connect to the "button-press" event. */
     if (profile->program) {
@@ -412,32 +446,6 @@ void stulto_terminal_set_title(StultoTerminal *terminal, gchar *title) {
     gtk_label_set_label(GTK_LABEL(terminal->title_widget), new_title_text);
 
     g_free(new_title_text);
-}
-
-// endregion
-
-// region Key-press actions
-
-void stulto_terminal_increase_font_size(StultoTerminal *terminal) {
-    VteTerminal *terminal_widget = terminal->terminal_widget;
-
-    gdouble scale = vte_terminal_get_font_scale(terminal_widget);
-    vte_terminal_set_font_scale(terminal_widget, scale * 1.125);
-}
-
-void stulto_terminal_decrease_font_size(StultoTerminal *terminal) {
-    VteTerminal *terminal_widget = terminal->terminal_widget;
-
-    gdouble scale = vte_terminal_get_font_scale(terminal_widget);
-    vte_terminal_set_font_scale(terminal_widget, scale / 1.125);
-}
-
-void stulto_terminal_copy_clipboard_format(StultoTerminal *terminal, VteFormat format) {
-    vte_terminal_copy_clipboard_format(terminal->terminal_widget, format);
-}
-
-void stulto_terminal_paste_clipboard(StultoTerminal *terminal) {
-    vte_terminal_paste_clipboard(terminal->terminal_widget);
 }
 
 // endregion

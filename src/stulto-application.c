@@ -30,9 +30,17 @@
 #include "stulto-exec-data.h"
 #include "stulto-main-window.h"
 
+static const gchar *HEADER_BAR_ENVAR_NAME = "STULTO_DISABLE_HEADERBAR";
+
 gboolean stulto_application_create(int argc, char *argv[]) {
     StultoAppConfig *config = g_malloc0(sizeof(StultoAppConfig));
     gchar **cmd_argv = NULL;
+
+    const gchar *use_header_bar = g_getenv(HEADER_BAR_ENVAR_NAME);
+
+    if (use_header_bar != NULL) {
+        config->disable_headerbar = TRUE;
+    }
 
     GOptionEntry options[] = {
             {

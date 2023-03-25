@@ -2,3 +2,5 @@ stulto
 pkg
 *.pkg.tar.*
 .idea/
+
+/build

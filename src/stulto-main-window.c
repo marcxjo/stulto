@@ -105,18 +105,15 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
 
     g_assert(event->type == GDK_KEY_PRESS);
 
-    if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) {
-        switch (gdk_keyval_to_lower(event->key.keyval)) {
+    if ((event->key.state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+    {
+        switch (gdk_keyval_to_lower(event->key.keyval))
+        {
             case GDK_KEY_t:
                 stulto_session_manager_add_session(
                         session_manager,
                         stulto_terminal_new(main_widow->config->initial_profile, stulto_exec_data_default()));
                 return TRUE;
-        }
-    }
-
-    if ((event->key.state & modifiers) == (GDK_CONTROL_MASK)) {
-        switch (gdk_keyval_to_lower(event->key.keyval)) {
             case GDK_KEY_Page_Up:
                 stulto_session_manager_prev_session(session_manager);
                 return TRUE;

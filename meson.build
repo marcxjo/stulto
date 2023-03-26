@@ -9,4 +9,8 @@ compiler = meson.get_compiler('c')
 
 vte_dep = dependency('vte-2.91')
 
+datadir = get_option('datadir')
+desktopdatadir = datadir / 'applications'
+
 subdir('src')
+subdir('data')

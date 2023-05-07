@@ -69,13 +69,13 @@ Installing
 ----------
 
 Make sure you have VTE with API version 2.91 installed along with headers,
-`pkg-config`, `make` and a C compiler.
+`pkg-config`, `meson`, `ninja`, and a C compiler.
 
 ```sh
 $ git clone 'https://github.com/marcxjo/stulto.git'
 $ cd stulto
-$ make release
-$ sudo make prefix=/usr install
+$ meson setup build
+$ meson install -C build
 ```
 
 To build stulto on Arch Linux, you can find a PKGBUILD script in the Git

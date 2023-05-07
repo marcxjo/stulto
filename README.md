@@ -13,7 +13,7 @@ configuration via a simple .ini file. Stulto is, however, opinionated with
 respect to its configuration of many VTE settings.
 
 Stulto enables GTK CSD by default. The headerbar can be disabled by setting the
-environment variable STULTO_DISABLE_HEADERBAR.
+environment variable `STULTO_DISABLE_HEADERBAR`.
 
 To use Stulto with CSD permanently disabled, add the following to your shell
 configuration (e.g., $HOME/.bashrc):
@@ -55,15 +55,6 @@ prioritized features have been completed.
 * Integrated/(semi-)seamless tab pane a la `kermit`/`urxvt-tabbed`
 * User-customizable tab labeling
 * Feature toggling at build time
-
-### Not Planned
-
-Features from other terminal emulators that will explicitly not be implemented
-in Stulto
-
-* Detachable/re-attachable/transferable tabs
-* Image/Multimedia Handling ([_the terminal is not a media
-  player_](https://plato.stanford.edu/entries/category-mistakes/))
 
 Installing
 ----------

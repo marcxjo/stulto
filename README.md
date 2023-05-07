@@ -1,5 +1,5 @@
-Stulto - A Terminal for Fools
-=============================
+Stulto - A Simple VTE Terminal
+==============================
 
 About
 -----
@@ -7,29 +7,34 @@ About
 Stulto is a simple wrapper around the VTE terminal emulator widget for GTK3. It
 is forked from [stupidterm](https://github.com/esmil/stupidterm.git).
 
-Stulto is currently not particularly unique on the landscape of VTE terminals.
-Its primary distinguishing characteristics include multiple sessions (with
-session state indicated in the window title rather than in visible tabs) and
+Stulto's distinguishing characteristics include multiple sessions (with session
+state indicated in the window title rather than in visible tabs) and
 configuration via a simple .ini file. Stulto is, however, opinionated with
 respect to its configuration of many VTE settings.
+
+Stulto enables GTK CSD by default. The headerbar can be disabled by setting the
+environment variable STULTO_DISABLE_HEADERBAR.
+
+To use Stulto with CSD permanently disabled, add the following to your shell
+configuration (e.g., $HOME/.bashrc):
+
+```
+export STULTO_DISABLE_HEADERBAR=1
+```
 
 'Stulto' is Esperanto for 'foolishness.'
 
 Tentative Roadmap
 -----------------
 
-Stulto is currently in early development; as such, the feature roadmap is
-tentative and may change drastically until the design is stabilized. This is
-primarily a pedagogical project for the primary maintainer, but the guiding
-principle of feature development is for Stulto to become usable as a primary
-terminal emulator for most CLI-/TUI-driven workflows.
+Stulto's feature roadmap is tentative and subject to change until it sees public
+release. Once the first release is published, the current feature set will be
+considered stable, and future features will be implemented based on user input.
 
 ### Planned Features
 
 Confirmed and prioritized for upcoming development
 
-* GTK CSDs
-  * May be implemented as optional
 * Terminal profiles per tab
 
 ### Long-term Features
@@ -60,15 +65,6 @@ in Stulto
 * Image/Multimedia Handling ([_the terminal is not a media
   player_](https://plato.stanford.edu/entries/category-mistakes/))
 
-### Architectural Enhancements
-
-Updates to the codebase for more streamlined development
-
-These generally do not impact the user, but may be of interest to those
-interested in forking the codebase and/or contributing to the project.
-
-* Modular source architecture
-
 Installing
 ----------
 
@@ -93,7 +89,8 @@ On startup Stulto will look for `$config_dir/stulto/stulto.ini` under your
 config dir (unless you specify an alternative config file). For most users,
 `$config_dir` is usually `$XDG_CONFIG_HOME` or `$HOME/.config`.
 
-Copy the included example there and edit it to your heart's content.
+To get started, copy the included example config file and edit to your heart's
+content.
 
 License
 -------

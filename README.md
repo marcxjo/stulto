@@ -24,6 +24,25 @@ export STULTO_DISABLE_HEADERBAR=1
 
 'Stulto' is Esperanto for 'foolishness.'
 
+Keybindings
+-----------
+
+Stulto supports the following keybindings:
+
+| Key Combination | Action                           |
+| --------------- |--------------------------------- |
+| Ctrl+Shift+-    | Decrease terminal font size      |
+| Ctrl+Shift+=    | Increase terminal font size      |
+| Ctrl+Shift+0    | Reset terminal font size         |
+| Ctrl+Shift+c    | Copy selected text               |
+| Ctrl+Shift+p    | Paste at cursor position         |
+| Ctrl+Shift+t    | Add terminal session             |
+| Ctrl+Shift+PgUp | Select previous terminal session |
+| Ctrl+Shift+PgDn | Select next terminal session     |
+
+In CSD mode, Stulto provides a toolbar with buttons for adding and navigating
+between terminal sessions.
+
 Tentative Roadmap
 -----------------
 

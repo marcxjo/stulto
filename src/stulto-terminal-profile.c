@@ -174,7 +174,7 @@ static void parse_file(StultoTerminalProfile *profile, GKeyFile *file, gchar *fi
 }
 
 StultoTerminalProfile *stulto_terminal_profile_parse(gchar *filename) {
-    StultoTerminalProfile *profile = g_malloc0(sizeof(StultoTerminalProfile));
+    StultoTerminalProfile *profile = g_new0(StultoTerminalProfile, 1);
 
     if (filename == NULL || filename[0] == '\0')
     {

@@ -33,7 +33,7 @@
 static const gchar *HEADER_BAR_ENVAR_NAME = "STULTO_DISABLE_HEADERBAR";
 
 gboolean stulto_application_create(int argc, char *argv[]) {
-    StultoAppConfig *config = g_malloc0(sizeof(StultoAppConfig));
+    StultoAppConfig *config = g_new0(StultoAppConfig, 1);
     gchar **cmd_argv = NULL;
 
     const gchar *use_header_bar = g_getenv(HEADER_BAR_ENVAR_NAME);

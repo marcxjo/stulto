@@ -3,8 +3,6 @@ pkg
 *.pkg.tar.*
 .idea/
 
-/build
-
 # Ignore the compilation db in the root dir - probably a symlink to make e.g.
 # clangd play nice
 /compile_commands.json

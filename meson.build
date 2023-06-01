@@ -11,8 +11,6 @@ st_name = meson.project_name()
 
 # Compiler dependencies
 
-compiler = meson.get_compiler('c')
-
 vte_dep = dependency('vte-2.91')
 
 # Directories

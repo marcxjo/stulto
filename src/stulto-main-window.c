@@ -30,7 +30,6 @@ struct _StultoMainWindow {
 
     StultoAppConfig *config;
     StultoSessionManager *session_manager;
-    StultoTerminal *active_terminal;
     StultoHeaderBar *header_bar;
 };
 
@@ -145,8 +144,6 @@ static void stulto_main_window_session_manager_notify_active_session_cb(GObject 
         gtk_window_set_title(window, new_title);
 
         g_free(new_title);
-
-        return;
     }
 
     stulto_header_bar_set_session_indicator_label(main_window->header_bar, terminal_id, num_sessions);
@@ -192,7 +189,6 @@ static void stulto_main_window_init(StultoMainWindow *main_window) {
 
     StultoSessionManager *session_manager = stulto_session_manager_new();
 
-    gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(session_manager));
     main_window->session_manager = session_manager;
 
     g_signal_connect(window_widget, "key-press-event", G_CALLBACK(key_press_event_cb), NULL);
@@ -225,12 +221,32 @@ StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConf
     StultoMainWindow *main_window = STULTO_MAIN_WINDOW(g_object_new(STULTO_TYPE_MAIN_WINDOW, NULL));
 
     stulto_session_manager_add_session(main_window->session_manager, terminal);
-    main_window->active_terminal = terminal;
     main_window->config = config;
 
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
     if(!config->disable_headerbar) {
+        gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(main_window->header_bar), TRUE);
         gtk_window_set_titlebar(GTK_WINDOW(main_window), GTK_WIDGET(main_window->header_bar));
+    } else {
+        gtk_box_pack_start(
+            GTK_BOX(box),
+            GTK_WIDGET(main_window->header_bar),
+            FALSE,
+            FALSE,
+            0
+        );
     }
+
+    gtk_box_pack_start(
+        GTK_BOX(box),
+        GTK_WIDGET(main_window->session_manager),
+        TRUE,
+        TRUE,
+        0
+    );
+
+    gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(box));
 
     return main_window;
 }

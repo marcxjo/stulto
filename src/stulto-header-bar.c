@@ -22,8 +22,6 @@
 struct _StultoHeaderBar {
     GtkHeaderBar parent_instance;
 
-    gchar *title;
-    gchar *session_indicator_label;
     GtkWidget *session_indicator;
 };
 
@@ -79,9 +77,6 @@ static void stulto_header_bar_finalize(GObject *object) {
 static void stulto_header_bar_init(StultoHeaderBar *header_bar) {
     GtkStyleContext *header_bar_style_context = gtk_widget_get_style_context(GTK_WIDGET(header_bar));
     gtk_style_context_add_class(header_bar_style_context, HEADER_BAR_STYLE_CLASS);
-
-    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
-    gtk_header_bar_set_has_subtitle(GTK_HEADER_BAR(header_bar), FALSE);
 
     GtkWidget *nav_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 

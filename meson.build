@@ -9,10 +9,6 @@ project(
 
 st_name = meson.project_name()
 
-# Compiler dependencies
-
-vte_dep = dependency('vte-2.91')
-
 # Directories
 
 datadir = get_option('datadir')

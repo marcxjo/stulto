@@ -11,8 +11,6 @@ stulto_sources = [
     'stulto.c',
 ]
 
-# Compiler dependencies
-
 vte_dep = dependency('vte-2.91')
 
 executable(

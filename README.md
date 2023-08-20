@@ -69,7 +69,6 @@ architectural planning to implement.
 These are not confirmed, but may be implemented in the long term after prior
 prioritized features have been completed.
 
-* Configuration via DConf
 * User-configurable tab labels
 * Integrated/(semi-)seamless tab pane a la `kermit`/`urxvt-tabbed`
 * User-customizable tab labeling

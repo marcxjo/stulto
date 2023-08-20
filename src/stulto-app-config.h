@@ -25,14 +25,12 @@
 #include "stulto-terminal-profile.h"
 
 /*
- * An object that stores global/app-wide settings
- * This will eventually be migrated to GSettings
+ * An object that stores global/app-wide settings (i.e., settings that don't apply only to singular terminal widgets)
  */
 
 typedef struct _StultoAppConfig {
     gchar *role;
-    gchar *initial_profile_path; // For this instance of the app
-    // TODO - this is a little dirty - makes a decent case to migrate to GSettings
+    gchar *initial_profile_path;
     StultoTerminalProfile *initial_profile;
     gboolean disable_headerbar;
 } StultoAppConfig;

@@ -21,8 +21,6 @@
 
 struct _StultoHeaderBar {
     GtkHeaderBar parent_instance;
-
-    GtkWidget *session_indicator;
 };
 
 G_DEFINE_FINAL_TYPE(StultoHeaderBar, stulto_header_bar, GTK_TYPE_HEADER_BAR)
@@ -82,13 +80,6 @@ static void stulto_header_bar_init(StultoHeaderBar *header_bar) {
 
     GtkWidget *nav_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    GtkWidget *session_indicator = gtk_label_new("1 / 1");
-
-    GtkStyleContext *session_indicator_style_context = gtk_widget_get_style_context(GTK_WIDGET(session_indicator));
-    gtk_style_context_add_class(session_indicator_style_context, SESSION_INDICATOR_STYLE_CLASS);
-
-    header_bar->session_indicator = session_indicator;
-
     // TODO - add callback to enable adding a session
     GIcon *new_session_icon = g_themed_icon_new("add");
     GtkWidget *new_session_btn = gtk_button_new();
@@ -96,7 +87,6 @@ static void stulto_header_bar_init(StultoHeaderBar *header_bar) {
 
     g_signal_connect(new_session_btn, "clicked", G_CALLBACK(new_session_btn_clicked_cb), header_bar);
 
-    gtk_container_add(GTK_CONTAINER(nav_btn_box), session_indicator);
     gtk_container_add(GTK_CONTAINER(nav_btn_box), new_session_btn);
 
     GtkWidget *tab_ctrl_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -160,15 +150,4 @@ static void stulto_header_bar_class_init(StultoHeaderBarClass *klass) {
 
 StultoHeaderBar *stulto_header_bar_new() {
     return STULTO_HEADER_BAR(g_object_new(STULTO_TYPE_HEADER_BAR, NULL));
-}
-
-
-void stulto_header_bar_set_session_indicator_label(StultoHeaderBar *header_bar, gint current_session, gint num_sessions) {
-    g_return_if_fail(STULTO_IS_HEADER_BAR(header_bar));
-
-    gchar *session_indicator_label = g_strdup_printf("%d / %d", current_session + 1, num_sessions);
-
-    gtk_label_set_text(GTK_LABEL(header_bar->session_indicator), session_indicator_label);
-
-    g_free(session_indicator_label);
 }

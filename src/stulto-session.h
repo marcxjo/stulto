@@ -38,9 +38,6 @@ StultoSession *stulto_session_new(StultoTerminal *terminal);
 StultoTerminal *stulto_session_get_active_terminal(StultoSession *session);
 void stulto_session_set_active_terminal(StultoSession *session, StultoTerminal *terminal);
 
-gint stulto_session_get_active_terminal_id(StultoSession *session);
-void stulto_session_set_active_terminal_id(StultoSession *session, gint terminal_id);
-
 G_END_DECLS
 
 #endif //STULTO_SESSION_H

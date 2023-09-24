@@ -63,16 +63,6 @@ static void page_added_cb(GtkNotebook *notebook, GtkWidget *child, guint page_nu
     StultoSessionManager *session_manager = STULTO_SESSION_MANAGER(notebook);
     StultoSession *session = STULTO_SESSION(child);
     StultoTerminal *terminal = stulto_session_get_active_terminal(session);
-    const char *term_title = stulto_terminal_get_title(terminal);
-
-    gchar *new_title = g_strdup(
-            term_title == NULL || term_title[0] == '\0'
-            ? "Stulto"
-            : term_title);
-
-    stulto_terminal_set_title(terminal, new_title);
-
-    g_free(new_title);
 
     stulto_session_manager_set_active_session(session_manager, session);
 }
@@ -185,12 +175,6 @@ gint stulto_session_manager_get_active_session_id(StultoSessionManager *session_
     g_return_val_if_fail(STULTO_IS_SESSION_MANAGER(session_manager), -1);
 
     return gtk_notebook_get_current_page(GTK_NOTEBOOK(session_manager));
-}
-
-void stulto_session_manager_set_active_session_id(StultoSessionManager *session_manager, gint session_id) {
-    g_return_if_fail(STULTO_IS_SESSION_MANAGER(session_manager));
-
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(session_manager), session_id);
 }
 
 gint stulto_session_manager_get_n_sessions(StultoSessionManager *session_manager) {

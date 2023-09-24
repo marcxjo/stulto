@@ -73,8 +73,6 @@ static void stulto_header_bar_finalize(GObject *object) {
 
 
 static void stulto_header_bar_init(StultoHeaderBar *header_bar) {
-    gtk_header_bar_set_has_subtitle(GTK_HEADER_BAR(header_bar), FALSE);
-
     GtkStyleContext *header_bar_style_context = gtk_widget_get_style_context(GTK_WIDGET(header_bar));
     gtk_style_context_add_class(header_bar_style_context, HEADER_BAR_STYLE_CLASS);
 

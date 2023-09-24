@@ -44,17 +44,11 @@ static void stulto_session_finalize(GObject *object);
 static void stulto_session_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec);
 static void stulto_session_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec);
 
-static void stulto_session_class_init(StultoSessionClass *klass);
-static void stulto_session_init(StultoSession *session);
-
 StultoSession *stulto_session_new(StultoTerminal *terminal);
 
 /* Getters & setters */
 StultoTerminal *stulto_session_get_active_terminal(StultoSession *session);
 void stulto_session_set_active_terminal(StultoSession *session, StultoTerminal *terminal);
-
-gint stulto_session_get_active_terminal_id(StultoSession *session);
-void stulto_session_set_active_terminal_id(StultoSession *session, gint terminal_id);
 
 // endregion
 
@@ -143,15 +137,6 @@ void stulto_session_set_active_terminal(StultoSession *session, StultoTerminal *
     session->active_terminal = terminal;
 
     gtk_container_add(GTK_CONTAINER(session), GTK_WIDGET(terminal));
-}
-
-gint stulto_session_get_active_terminal_id(StultoSession *session) {
-    // TODO - un-stub
-    return 0;
-}
-
-void stulto_session_set_active_terminal_id(StultoSession *session, gint terminal_id) {
-    // TODO - un-stub
 }
 
 // endregion

@@ -75,12 +75,6 @@ void stulto_terminal_set_title(StultoTerminal *terminal, gchar *title);
 static void vte_window_title_changed_cb(VteTerminal *terminal_widget, gpointer data) {
     GtkWidget *parent = gtk_widget_get_ancestor(GTK_WIDGET(terminal_widget), STULTO_TYPE_TERMINAL);
 
-    const gchar *vte_title = vte_terminal_get_window_title(terminal_widget);
-
-    gchar *new_title = g_strdup(vte_title);
-
-    stulto_terminal_set_title(STULTO_TERMINAL(parent), new_title);
-
     g_object_notify(G_OBJECT(parent), "title");
 }
 
@@ -389,24 +383,12 @@ static void stulto_terminal_class_init(StultoTerminalClass *klass) {
 static void stulto_terminal_init(StultoTerminal *terminal) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-    GtkWidget *titlebar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    // TODO - need to ship a default stylesheet to ensure that terminal titlebars aren't transparent
-    // This makes the app look broken
-    GtkStyleContext *box_style_context = gtk_widget_get_style_context(titlebar);
-    gtk_style_context_add_class(box_style_context, STULTO_TERMINAL_TITLEBAR_STYLE_CLASS);
-
-    GtkWidget *label = gtk_label_new("Stulto");
-    gtk_container_add(GTK_CONTAINER(titlebar), label);
-
-    gtk_box_pack_start(GTK_BOX(box), titlebar, FALSE, FALSE, 0);
-
     GtkWidget *terminal_widget = vte_terminal_new();
     gtk_box_pack_start(GTK_BOX(box), terminal_widget, TRUE, TRUE, 0);
 
     gtk_container_add(GTK_CONTAINER(terminal), box);
 
     terminal->terminal_widget = VTE_TERMINAL(terminal_widget);
-    terminal->title_widget = GTK_LABEL(label);
 }
 
 StultoTerminal *stulto_terminal_new(StultoTerminalProfile *profile, StultoExecData *exec_data) {

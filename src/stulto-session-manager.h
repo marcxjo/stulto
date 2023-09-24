@@ -36,7 +36,6 @@ StultoSession *stulto_session_manager_get_active_session(StultoSessionManager *s
 void stulto_session_manager_set_active_session(StultoSessionManager *session_manager, StultoSession *session);
 
 gint stulto_session_manager_get_active_session_id(StultoSessionManager *session_manager);
-void stulto_session_manager_set_active_session_id(StultoSessionManager *session_manager, gint session_id);
 
 gint stulto_session_manager_get_n_sessions(StultoSessionManager *session_manager);
 

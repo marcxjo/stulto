@@ -187,12 +187,6 @@ gint stulto_session_manager_get_active_session_id(StultoSessionManager *session_
     return gtk_notebook_get_current_page(GTK_NOTEBOOK(session_manager));
 }
 
-void stulto_session_manager_set_active_session_id(StultoSessionManager *session_manager, gint session_id) {
-    g_return_if_fail(STULTO_IS_SESSION_MANAGER(session_manager));
-
-    gtk_notebook_set_current_page(GTK_NOTEBOOK(session_manager), session_id);
-}
-
 gint stulto_session_manager_get_n_sessions(StultoSessionManager *session_manager) {
     g_return_val_if_fail(STULTO_IS_SESSION_MANAGER(session_manager), -1);
 

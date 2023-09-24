@@ -126,7 +126,6 @@ static gboolean key_press_event_cb(GtkWidget *widget, GdkEvent *event, gpointer 
 }
 
 static void stulto_main_window_session_manager_notify_active_session_cb(GObject *object, GParamSpec *pspec, gpointer data) {
-    StultoMainWindow *main_window = data;
     GtkWindow *window = data;
 
     StultoSessionManager *session_manager = STULTO_SESSION_MANAGER(object);
@@ -218,10 +217,10 @@ StultoMainWindow *stulto_main_window_new(StultoTerminal *terminal, StultoAppConf
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-    if(!config->disable_headerbar) {
+    if (config->disable_headerbar == 0) {
         gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(main_window->header_bar), TRUE);
         gtk_window_set_titlebar(GTK_WINDOW(main_window), GTK_WIDGET(main_window->header_bar));
-    } else {
+    } else if (config->disable_headerbar == 1) {
         gtk_box_pack_start(
             GTK_BOX(box),
             GTK_WIDGET(main_window->header_bar),

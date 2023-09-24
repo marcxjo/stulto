@@ -32,7 +32,7 @@ typedef struct _StultoAppConfig {
     gchar *role;
     gchar *initial_profile_path;
     StultoTerminalProfile *initial_profile;
-    gboolean disable_headerbar;
+    gint64 disable_headerbar;
 } StultoAppConfig;
 
 #endif //STULTO_APP_CONFIG_H

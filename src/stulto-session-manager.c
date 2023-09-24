@@ -63,16 +63,6 @@ static void page_added_cb(GtkNotebook *notebook, GtkWidget *child, guint page_nu
     StultoSessionManager *session_manager = STULTO_SESSION_MANAGER(notebook);
     StultoSession *session = STULTO_SESSION(child);
     StultoTerminal *terminal = stulto_session_get_active_terminal(session);
-    const char *term_title = stulto_terminal_get_title(terminal);
-
-    gchar *new_title = g_strdup(
-            term_title == NULL || term_title[0] == '\0'
-            ? "Stulto"
-            : term_title);
-
-    stulto_terminal_set_title(terminal, new_title);
-
-    g_free(new_title);
 
     stulto_session_manager_set_active_session(session_manager, session);
 }

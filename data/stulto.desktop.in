@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
 Name=Stulto
-Comment=A Terminal for Fools
+Comment=A Simple Terminal Emulator
 Exec=stulto
 Icon=utilities-terminal
 Terminal=false

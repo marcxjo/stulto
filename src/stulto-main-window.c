@@ -134,19 +134,12 @@ static void stulto_main_window_session_manager_notify_active_session_cb(GObject 
     gint terminal_id = stulto_session_manager_get_active_session_id(session_manager);
     gint num_sessions = stulto_session_manager_get_n_sessions(session_manager);
 
-    g_return_if_fail(main_window->config != NULL);
+    // GtkNotebook uses zero-based page numbering, hence we add 1 for user-friendly output
+    gchar *new_title = g_strdup_printf("[%d/%d] Stulto", terminal_id + 1, num_sessions);
 
-    if (main_window->config->disable_headerbar)
-    {
-        // GtkNotebook uses zero-based page numbering, hence we add 1 for user-friendly output
-        gchar *new_title = g_strdup_printf("[%d/%d] Stulto", terminal_id + 1, num_sessions);
+    gtk_window_set_title(window, new_title);
 
-        gtk_window_set_title(window, new_title);
-
-        g_free(new_title);
-    }
-
-    stulto_header_bar_set_session_indicator_label(main_window->header_bar, terminal_id, num_sessions);
+    g_free(new_title);
 }
 
 // endregion
@@ -168,7 +161,7 @@ static void stulto_main_window_realize(GtkWidget *widget) {
         g_free(config->role);
     }
 
-    gchar *window_title = g_strdup(config->disable_headerbar ? "[1/1] Stulto" : "Stulto");
+    gchar *window_title = g_strdup("[1/1] Stulto");
 
     gtk_window_set_title(GTK_WINDOW(main_window), window_title);
     g_free(window_title);

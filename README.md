@@ -101,6 +101,16 @@ config dir (unless you specify an alternative config file). For most users,
 To get started, copy the included example config file and edit to your heart's
 content.
 
+Development
+-----------
+
+Stulto is currently a one-dev project, but contributions are welcome and
+encouraged (though note that not all features are guaranteed to be
+accepted for adoption). Despite that Stulto is not currently a
+collaborative project, pull requests used extensively to signal breaking
+or otherwise significant changes and document the reasoning for the
+benefit of interested users or contributors.
+
 License
 -------
 

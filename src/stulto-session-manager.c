@@ -134,6 +134,7 @@ static void stulto_session_manager_class_init(StultoSessionManagerClass *klass) 
 
 static void stulto_session_manager_init(StultoSessionManager *session_manager) {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(session_manager), FALSE);
+    gtk_notebook_set_show_border(GTK_NOTEBOOK(session_manager), FALSE);
 
     g_signal_connect(session_manager, "page-added", G_CALLBACK(page_added_cb), NULL);
     g_signal_connect_after(session_manager, "switch-page", G_CALLBACK(switch_page_cb), NULL);

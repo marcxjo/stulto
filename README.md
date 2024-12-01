@@ -1,6 +1,17 @@
 Stulto - A Simple VTE Terminal
 ==============================
 
+No longer maintained
+---
+
+Stulto was a simple platform to enable learning about C, GTK, and VTE in
+particular. It has a lot of design issues that, for an app this simple, are
+simultaneously not worth the trouble and almost too simple to bother with. I
+intend to start fresh with a GTK4 app that builds on the intent behind Stulto,
+with additional features and a workflow more suited to users who enjoy the
+feature set of VTE but seek a more flexible and slimmed-down experience
+than the current popular offerings.
+
 About
 -----
 
